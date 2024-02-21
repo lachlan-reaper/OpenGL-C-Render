@@ -1,12 +1,17 @@
 
 CC := gcc
-C_FLAGS := -Wall -g -DGLEW_STATIC -D_WIN64
+LIB_PATH := .\libs
+C_FLAGS := -Wall -g -DGLEW_STATIC
 LNK_LIBS := -lglfw3 -lgdi32 -lopengl32 -lm -lGLU32 -lGLEW32
-INC_LIBS := .\includes\ .\includes\glfw3dll.lib .\includes\OpenGL32.lib .\includes\glew32.lib
+INC_LIBS := $(LIB_PATH)\ $(LIB_PATH)\glfw3dll.lib $(LIB_PATH)\OpenGL32.lib $(LIB_PATH)\glew32.lib
 
 MAIN_FILE := core.c
 COMP_FILES := ./shaders/shader.c 
+COMP_FILES += ./source/vectors/vector4.c 
+COMP_FILES += ./source/render_engine.c 
 COMP_FILES += $(MAIN_FILE)
+
+C_FLAGS += -D_WIN64
 
 .Phony: build
 build:
