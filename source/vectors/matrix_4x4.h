@@ -28,6 +28,9 @@ void set_scale_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTOR
 */
 void set_rotate_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z);
 
+/*
+	CAN NOT BE THE SAME OBJ
+*/
 static inline matrix_4x4* transpose_mat4x4(const matrix_4x4* orig, matrix_4x4* transp)
 {
 	transp->arr[0] = orig->arr[0];
