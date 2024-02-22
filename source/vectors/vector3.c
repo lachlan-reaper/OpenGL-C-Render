@@ -1,37 +1,24 @@
-#include "vector4.h"
+#include "vector3.h"
 
-
-vector4* new_vec4(const VECTOR_FLT x, const VECTOR_FLT y, const VECTOR_FLT z, const VECTOR_FLT w)
+vector3* new_vec3(const VECTOR_FLT x, const VECTOR_FLT y, const VECTOR_FLT z)
 {
-	vector4* vector = calloc(1, sizeof(vector4));
-	set_vec4(vector, x, y, z, w);
+	vector3* vector = calloc(1, sizeof(vector3));
+	set_vec3(vector, x, y, z);
 	return vector;
 }
-void translate_vec4(vector4* vector, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
-{
-	vector.arr[0] += delta_x * vector.arr[3];
-	vector.arr[1] += delta_y * vector.arr[3];
-	vector.arr[2] += delta_z * vector.arr[3];
-}
-void scale_vec4(vector4* vector, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
-{
-	vector.arr[0] *= delta_x;
-	vector.arr[1] *= delta_y;
-	vector.arr[2] *= delta_z;
-}
-void rotate_vec4_x_axis_rad(vector4* vector, const VECTOR_FLT delta)
+void rotate_vec3_x_axis_rad(vector3* vector, const VECTOR_FLT delta)
 {
 	VECTOR_FLT tmp = vector.arr[1]*cos(delta) - vector.arr[2]*sin(delta);
 	vector.arr[2] = vector.arr[1]*sin(delta) + vector.arr[2]*cos(delta);
 	vector.arr[1] = tmp;
 }
-void rotate_vec4_y_axis_rad(vector4* vector, const VECTOR_FLT delta)
+void rotate_vec3_y_axis_rad(vector3* vector, const VECTOR_FLT delta)
 {
 	VECTOR_FLT tmp = vector.arr[2]*cos(delta) - vector.arr[0]*sin(delta);
 	vector.arr[0] = vector.arr[2]*sin(delta) + vector.arr[0]*cos(delta);
 	vector.arr[2] = tmp;
 }
-void rotate_vec4_z_axis_rad(vector4* vector, const VECTOR_FLT delta)
+void rotate_vec3_z_axis_rad(vector3* vector, const VECTOR_FLT delta)
 {
 	VECTOR_FLT tmp = vector.arr[0]*cos(delta) - vector.arr[1]*sin(delta);
 	vector.arr[1] = vector.arr[0]*sin(delta) + vector.arr[1]*cos(delta);
@@ -41,7 +28,7 @@ void rotate_vec4_z_axis_rad(vector4* vector, const VECTOR_FLT delta)
 /*
 	WILL APPLY ROTATION IN ORDER M = B.X.Y.Z
 */
-void rotate_vec4(vector4* vector, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
+void rotate_vec3(vector3* vector, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
 {
 	VECTOR_FLT A = cos(delta_x);
 	VECTOR_FLT B = sin(delta_x);
