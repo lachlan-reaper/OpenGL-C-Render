@@ -12,7 +12,7 @@
 #include <GLFW/glfw3.h>
 
 #include "../shaders/shader.h"
-#include "./vectors/matrix_4sq.h"
+#include "./vectors/matrix_4x4.h"
 #include "./vectors/vector4.h"
 #include "./vectors/vector3.h"
 

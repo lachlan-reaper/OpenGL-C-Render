@@ -1,11 +1,11 @@
-#include "matrix_4sq.h"
+#include "matrix_4x4.h"
 
-matrix_4sq* new_mat4sq()
+matrix_4x4* new_mat4x4()
 {
-	return calloc(1, sizeof(matrix_4sq));
+	return calloc(1, sizeof(matrix_4x4));
 }
 
-void set_translate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
+void set_translate_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
 {
 	matrix->arr[0] = 1;
 	matrix->arr[1] = 0;
@@ -27,7 +27,7 @@ void set_translate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VE
 	matrix->arr[14] = 0;
 	matrix->arr[15] = 1;
 }
-void set_scale_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
+void set_scale_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
 {
 	matrix->arr[0] = delta_x;
 	matrix->arr[1] = 0;
@@ -53,7 +53,7 @@ void set_scale_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR
 /*
 	WILL APPLY ROTATION IN ORDER M = B.X.Y.Z
 */
-void set_rotate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
+void set_rotate_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
 {
 	VECTOR_FLT A = cos(delta_x);
 	VECTOR_FLT B = sin(delta_x);
@@ -86,16 +86,27 @@ void set_rotate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTO
 	matrix->arr[15] = 1;
 }
 
-void set_perspective_mat4sq(matrix_4sq* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT _near, const VECTOR_FLT _far)
+void set_perspective_mat4x4(matrix_4x4* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT _near, const VECTOR_FLT _far)
 {
 	VECTOR_FLT tan_fov = tan((VECTOR_FLT)fov/2.0f);
-	matrix->arr[0] = 1 / (aspect * tan_fov);
+	if (tan_fov == 0)
+	{
+		matrix->arr[0] = 0;
+		matrix->arr[5] = 0; // idk???
+	}
+	else
+	{
+		matrix->arr[0] = 1 / (aspect * tan_fov);
+		matrix->arr[5] = 1 / tan_fov;
+	}
+	
+	// matrix->arr[0] ^^
 	matrix->arr[1] = 0;
 	matrix->arr[2] = 0;
 	matrix->arr[3] = 0;
 
 	matrix->arr[4] = 0;
-	matrix->arr[5] = 1 / tan_fov;
+	// matrix->arr[5] ^^
 	matrix->arr[6] = 0;
 	matrix->arr[7] = 0;
 
@@ -109,33 +120,33 @@ void set_perspective_mat4sq(matrix_4sq* matrix, const VECTOR_FLT fov, const VECT
 	matrix->arr[14] = -1;
 	matrix->arr[15] = 0;
 }
-void set_look_at_mat4sq(matrix_4sq* matrix, const vector3* location, const vector3* fixation, const vector3* rotation)
+void set_look_at_mat4x4(matrix_4x4* matrix, const vector3* location, const vector3* fixation, const vector3* rotation)
 {
 	vector3 x_axis;
 	vector3 y_axis;
 	vector3 z_axis;
 
-	normalize_vec3(sub_vec3s(location, copy_vec3(fixation, &z_axis))); // Sets z-axis
-	normalize_vec3(cross_vec3_by_vec3(rotation, copy_vec3(&z_axis, &x_axis))); // Sets x-axis
-	cross_vec3_by_vec3(&z_axis, copy_vec3(&x_axis, &y_axis)); // Sets y-axis
+	normalize_vec3(sub_vec3s(fixation, copy_to_vec3(location, &z_axis))); // Sets z-axis
+	normalize_vec3(cross_vec3_by_vec3(&z_axis, copy_to_vec3(rotation, &x_axis))); // Sets x-axis
+	cross_vec3_by_vec3(&x_axis, copy_to_vec3(&z_axis, &y_axis)); // Sets y-axis
 
 	matrix->arr[0] = x_axis.arr[0];
-	matrix->arr[1] = y_axis.arr[0];
-	matrix->arr[2] = z_axis.arr[0];
-	matrix->arr[3] = 0;
+	matrix->arr[1] = x_axis.arr[1];
+	matrix->arr[2] = x_axis.arr[2];
+	matrix->arr[3] = -dot_vec3(&x_axis, location);
 
-	matrix->arr[4] = x_axis.arr[1];
+	matrix->arr[4] = y_axis.arr[0];
 	matrix->arr[5] = y_axis.arr[1];
-	matrix->arr[6] = z_axis.arr[1];
-	matrix->arr[7] = 0;
+	matrix->arr[6] = y_axis.arr[2];
+	matrix->arr[7] = -dot_vec3(&y_axis, location);
 
-	matrix->arr[8] = x_axis.arr[2];
-	matrix->arr[9] = y_axis.arr[2];
-	matrix->arr[10] = z_axis.arr[2];
-	matrix->arr[11] = 0;
+	matrix->arr[8] = -z_axis.arr[0];
+	matrix->arr[9] = -z_axis.arr[1];
+	matrix->arr[10] = -z_axis.arr[2];
+	matrix->arr[11] = dot_vec3(&z_axis, location);
 
-	matrix->arr[12] = -dot_vec3(&x_axis, location);
-	matrix->arr[13] = -dot_vec3(&y_axis, location);
-	matrix->arr[14] = -dot_vec3(&z_axis, location);
+	matrix->arr[12] = 0;
+	matrix->arr[13] = 0;
+	matrix->arr[14] = 0;
 	matrix->arr[15] = 1;
 }

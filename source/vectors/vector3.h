@@ -74,7 +74,7 @@ static inline void transform_all_vec3_deg(vector3* vector,
 	);
 }
 
-static inline vector3* copy_vec3(const vector3* base, vector3* copy)
+static inline vector3* copy_to_vec3(const vector3* base, vector3* copy)
 {
 	copy->arr[0] = base->arr[0];
 	copy->arr[1] = base->arr[1];
@@ -84,12 +84,13 @@ static inline vector3* copy_vec3(const vector3* base, vector3* copy)
 
 static inline vector3* normalize_vec3(vector3* vector)
 {
-	VECTOR_FLT mag = fabsf(vector->arr[0]) + fabsf(vector->arr[1]) + fabsf(vector->arr[2]);
-	if (mag)
+	VECTOR_FLT mag = sqrt(vector->arr[0]*vector->arr[0] + vector->arr[1]*vector->arr[1] + vector->arr[2]*vector->arr[2]);
+	if (mag != 0)
 	{
-		vector->arr[0] /= mag;
-		vector->arr[1] /= mag;
-		vector->arr[2] /= mag;
+		mag = 1 / mag;
+		vector->arr[0] *= mag;
+		vector->arr[1] *= mag;
+		vector->arr[2] *= mag;
 	}
 	return (vector);
 }

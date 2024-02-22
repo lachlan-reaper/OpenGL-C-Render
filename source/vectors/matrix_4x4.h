@@ -1,34 +1,34 @@
-#ifndef MATRIX_4SQ_H
-#define MATRIX_4SQ_H
+#ifndef MATRIX_4x4_H
+#define MATRIX_4x4_H
 
 #include "vector_standards.h"
 #include "vector3.h"
 #include "vector4.h"
 
-typedef struct matrix_4sq
+typedef struct matrix_4x4
 {
 	VECTOR_FLT arr[16];
-} matrix_4sq;
+} matrix_4x4;
 
-matrix_4sq* new_mat4sq();
+matrix_4x4* new_mat4x4();
 
-static inline void reset_mat4sq(matrix_4sq* matrix)
+static inline void reset_mat4x4(matrix_4x4* matrix)
 {
 	for (int i = 0; i < 16; i++) matrix->arr[i] = 0;
 }
-static inline void set_identity_mat4sq(matrix_4sq* matrix)
+static inline void set_identity_mat4x4(matrix_4x4* matrix)
 {
 	for (int i = 0; i < 16; i++) matrix->arr[i] = ((i / 4 == i % 4) ? 1 : 0);
 }
-void set_translate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z);
-void set_scale_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z);
+void set_translate_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z);
+void set_scale_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z);
 
 /*
 	delta_? must be in rads 
 */
-void set_rotate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z);
+void set_rotate_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z);
 
-static inline matrix_4sq* transpose_mat4sq(const matrix_4sq* orig, matrix_4sq* transp)
+static inline matrix_4x4* transpose_mat4x4(const matrix_4x4* orig, matrix_4x4* transp)
 {
 	transp->arr[0] = orig->arr[0];
 	transp->arr[1] = orig->arr[4];
@@ -46,12 +46,12 @@ static inline matrix_4sq* transpose_mat4sq(const matrix_4sq* orig, matrix_4sq* t
 	transp->arr[13] = orig->arr[7];
 	transp->arr[14] = orig->arr[11];
 	transp->arr[15] = orig->arr[15];
-	return (transp);
+	return transp;
 }
 
-static matrix_4sq tmp_mat;
+static matrix_4x4 tmp_mat;
 
-static inline void copy_to_tmp_buf_mat4sq(const matrix_4sq* base)
+static inline void copy_to_tmp_buf_mat4x4(const matrix_4x4* base)
 {
 	tmp_mat.arr[0] = base->arr[0];
 	tmp_mat.arr[1] = base->arr[1];
@@ -74,9 +74,9 @@ static inline void copy_to_tmp_buf_mat4sq(const matrix_4sq* base)
 /*
 	Result stored in second
 */
-static inline matrix_4sq* cross_mat4sq_by_mat4sq(matrix_4sq* first, matrix_4sq* second)
+static inline matrix_4x4* cross_mat4x4_by_mat4x4(matrix_4x4* first, matrix_4x4* second)
 {
-	copy_to_tmp_buf_mat4sq(second);
+	copy_to_tmp_buf_mat4x4(second);
 
 	second->arr[0] = first->arr[0] * tmp_mat.arr[0] + first->arr[1] * tmp_mat.arr[4] + first->arr[2] * tmp_mat.arr[8] + first->arr[3] * tmp_mat.arr[12];
 	second->arr[1] = first->arr[0] * tmp_mat.arr[1] + first->arr[1] * tmp_mat.arr[5] + first->arr[2] * tmp_mat.arr[9] + first->arr[3] * tmp_mat.arr[13];
@@ -102,7 +102,7 @@ static inline matrix_4sq* cross_mat4sq_by_mat4sq(matrix_4sq* first, matrix_4sq* 
 /*
 	Result stored in vector
 */
-static inline vector4* cross_mat4sq_by_vec4(matrix_4sq* matrix, vector4* vector)
+static inline vector4* cross_mat4x4_by_vec4(matrix_4x4* matrix, vector4* vector)
 {
 	VECTOR_FLT x = vector->arr[0];
 	VECTOR_FLT y = vector->arr[1];
@@ -116,40 +116,40 @@ static inline vector4* cross_mat4sq_by_vec4(matrix_4sq* matrix, vector4* vector)
 	return vector;
 }
 
-static inline void translate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
+static inline void translate_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
 {
-	set_translate_mat4sq(&tmp_mat, delta_x, delta_y, delta_z);
-	cross_mat4sq_by_mat4sq(&tmp_mat, matrix);
+	set_translate_mat4x4(&tmp_mat, delta_x, delta_y, delta_z);
+	cross_mat4x4_by_mat4x4(&tmp_mat, matrix);
 }
-static inline void scale_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
+static inline void scale_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
 {
-	set_scale_mat4sq(&tmp_mat, delta_x, delta_y, delta_z);
-	cross_mat4sq_by_mat4sq(&tmp_mat, matrix);
+	set_scale_mat4x4(&tmp_mat, delta_x, delta_y, delta_z);
+	cross_mat4x4_by_mat4x4(&tmp_mat, matrix);
 }
 
 /*
 	delta_? must be in rads
 */
-static inline void rotate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
+static inline void rotate_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
 {
-	set_rotate_mat4sq(&tmp_mat, delta_x, delta_y, delta_z);
-	cross_mat4sq_by_mat4sq(&tmp_mat, matrix);
+	set_rotate_mat4x4(&tmp_mat, delta_x, delta_y, delta_z);
+	cross_mat4x4_by_mat4x4(&tmp_mat, matrix);
 }
 
-void set_perspective_mat4sq(matrix_4sq* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT near, const VECTOR_FLT far);
-void set_look_at_mat4sq(matrix_4sq* matrix, const vector3* location, const vector3* fixation, const vector3* rotation);
+void set_perspective_mat4x4(matrix_4x4* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT near, const VECTOR_FLT far);
+void set_look_at_mat4x4(matrix_4x4* matrix, const vector3* location, const vector3* fixation, const vector3* rotation);
 
-static inline void transform_perspective_mat4sq(matrix_4sq* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT _near, const VECTOR_FLT _far)
+static inline void transform_perspective_mat4x4(matrix_4x4* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT _near, const VECTOR_FLT _far)
 {
-	matrix_4sq tmp_infunc_mat;
-	set_perspective_mat4sq(&tmp_infunc_mat, fov, aspect, _near, _far);
-	cross_mat4sq_by_mat4sq(&tmp_infunc_mat, matrix);
+	matrix_4x4 tmp_infunc_mat;
+	set_perspective_mat4x4(&tmp_infunc_mat, fov, aspect, _near, _far);
+	cross_mat4x4_by_mat4x4(&tmp_infunc_mat, matrix);
 }
-static inline void transform_look_at_mat4sq(matrix_4sq* matrix, const vector3* location, const vector3* fixation, const vector3* rotation)
+static inline void transform_look_at_mat4x4(matrix_4x4* matrix, const vector3* location, const vector3* fixation, const vector3* rotation)
 {
-	matrix_4sq tmp_infunc_mat;
-	set_look_at_mat4sq(&tmp_infunc_mat, location, fixation, rotation);
-	cross_mat4sq_by_mat4sq(&tmp_infunc_mat, matrix);
+	matrix_4x4 tmp_infunc_mat;
+	set_look_at_mat4x4(&tmp_infunc_mat, location, fixation, rotation);
+	cross_mat4x4_by_mat4x4(&tmp_infunc_mat, matrix);
 }
 
 #endif
