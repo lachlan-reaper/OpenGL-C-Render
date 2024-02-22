@@ -86,22 +86,23 @@ void set_rotate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTO
 	matrix->arr[15] = 1;
 }
 
-void set_perspective_mat4sq(matrix_4sq* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT near, const VECTOR_FLT far)
+void set_perspective_mat4sq(matrix_4sq* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT _near, const VECTOR_FLT _far)
 {
-	matrix->arr[0] = 1 / (aspect * tan(fov/2));
+	VECTOR_FLT tan_fov = tan((VECTOR_FLT)fov/2.0f);
+	matrix->arr[0] = 1 / (aspect * tan_fov);
 	matrix->arr[1] = 0;
 	matrix->arr[2] = 0;
 	matrix->arr[3] = 0;
 
 	matrix->arr[4] = 0;
-	matrix->arr[5] = 1 / tan(fov/2);
+	matrix->arr[5] = 1 / tan_fov;
 	matrix->arr[6] = 0;
 	matrix->arr[7] = 0;
 
 	matrix->arr[8] = 0;
 	matrix->arr[9] = 0;
-	matrix->arr[10] = -((far + near) / (far - near));
-	matrix->arr[11] = -((2*far*near) / (far - near));
+	matrix->arr[10] = (VECTOR_FLT)(_far + _near) / (VECTOR_FLT)(_near - _far);
+	matrix->arr[11] = (VECTOR_FLT)(2*_far*_near) / (VECTOR_FLT)(_near - _far);
 
 	matrix->arr[12] = 0;
 	matrix->arr[13] = 0;

@@ -24,9 +24,30 @@ void set_translate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VE
 void set_scale_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z);
 
 /*
-	delta_? must be in rads
+	delta_? must be in rads 
 */
 void set_rotate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z);
+
+static inline matrix_4sq* transpose_mat4sq(const matrix_4sq* orig, matrix_4sq* transp)
+{
+	transp->arr[0] = orig->arr[0];
+	transp->arr[1] = orig->arr[4];
+	transp->arr[2] = orig->arr[8];
+	transp->arr[3] = orig->arr[12];
+	transp->arr[4] = orig->arr[1];
+	transp->arr[5] = orig->arr[5];
+	transp->arr[6] = orig->arr[9];
+	transp->arr[7] = orig->arr[13];
+	transp->arr[8] = orig->arr[2];
+	transp->arr[9] = orig->arr[6];
+	transp->arr[10] = orig->arr[10];
+	transp->arr[11] = orig->arr[14];
+	transp->arr[12] = orig->arr[3];
+	transp->arr[13] = orig->arr[7];
+	transp->arr[14] = orig->arr[11];
+	transp->arr[15] = orig->arr[15];
+	return (transp);
+}
 
 static matrix_4sq tmp_mat;
 
@@ -118,15 +139,17 @@ static inline void rotate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, c
 void set_perspective_mat4sq(matrix_4sq* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT near, const VECTOR_FLT far);
 void set_look_at_mat4sq(matrix_4sq* matrix, const vector3* location, const vector3* fixation, const vector3* rotation);
 
-static inline void transform_perspective_mat4sq(matrix_4sq* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT near, const VECTOR_FLT far)
+static inline void transform_perspective_mat4sq(matrix_4sq* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT _near, const VECTOR_FLT _far)
 {
-	set_perspective_mat4sq(&tmp_mat, fov, aspect, near, far);
-	cross_mat4sq_by_mat4sq(&tmp_mat, matrix);
+	matrix_4sq tmp_infunc_mat;
+	set_perspective_mat4sq(&tmp_infunc_mat, fov, aspect, _near, _far);
+	cross_mat4sq_by_mat4sq(&tmp_infunc_mat, matrix);
 }
 static inline void transform_look_at_mat4sq(matrix_4sq* matrix, const vector3* location, const vector3* fixation, const vector3* rotation)
 {
-	set_look_at_mat4sq(&tmp_mat, location, fixation, rotation);
-	cross_mat4sq_by_mat4sq(&tmp_mat, matrix);
+	matrix_4sq tmp_infunc_mat;
+	set_look_at_mat4sq(&tmp_infunc_mat, location, fixation, rotation);
+	cross_mat4sq_by_mat4sq(&tmp_infunc_mat, matrix);
 }
 
 #endif

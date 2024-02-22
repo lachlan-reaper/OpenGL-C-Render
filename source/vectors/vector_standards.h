@@ -4,7 +4,9 @@
 #include <float.h>
 #include <math.h>
 
-typedef float VECTOR_FLT;
+#include <GL/gl.h>
+
+typedef GLfloat VECTOR_FLT;
 #define VECTOR_FLT_MIN FLT_MIN;
 #define VECTOR_FLT_MAX FLT_MAX;
 

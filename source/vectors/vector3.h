@@ -82,12 +82,16 @@ static inline vector3* copy_vec3(const vector3* base, vector3* copy)
 	return copy;
 }
 
-static inline void normalize_vec3(vector3* vector)
+static inline vector3* normalize_vec3(vector3* vector)
 {
-	VECTOR_FLT mag = vector->arr[0] + vector->arr[1] + vector->arr[2];
-	vector->arr[0] /= mag;
-	vector->arr[1] /= mag;
-	vector->arr[2] /= mag;
+	VECTOR_FLT mag = fabsf(vector->arr[0]) + fabsf(vector->arr[1]) + fabsf(vector->arr[2]);
+	if (mag)
+	{
+		vector->arr[0] /= mag;
+		vector->arr[1] /= mag;
+		vector->arr[2] /= mag;
+	}
+	return (vector);
 }
 
 static inline VECTOR_FLT dot_vec3(const vector3* first, const vector3* second)

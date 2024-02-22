@@ -57,24 +57,47 @@ void run(GLFWwindow* window)
 
 	// Get a handle for our "MVP" uniform
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-	vector3 camera;
+	vector3 location;
 	vector3 fixation;
 	vector3 rotation;
-	set_vec3(&camera, 4, 3, 3);
+	set_vec3(&location, 4, 3, 3);
 	set_vec3(&fixation, 0, 0, 0);
 	set_vec3(&rotation, 0, 1, 0);
 
 	matrix_4sq MVP;
 	set_identity_mat4sq(&MVP); // Model
-	transform_look_at_mat4sq(&MVP, &camera, &fixation, &rotation); // View
-	transform_perspective_mat4sq(&MVP, deg_to_rad(90), (VECTOR_FLT)WINDOW_WIDTH/(VECTOR_FLT)WINDOW_HEIGHT, 0.1f, 100.0f); // Perspective
+	transform_look_at_mat4sq(&MVP, &location, &fixation, &rotation); // View
+	transform_perspective_mat4sq(&MVP, deg_to_rad(45.0f), (VECTOR_FLT)WINDOW_WIDTH/(VECTOR_FLT)WINDOW_HEIGHT, 0.1f, 100.0f); // Perspective
+	for (int i = 0; i < 4; i++)
+	{
+		printf("\n");
+		for (int x = 0; x < 4; x++)
+		{
+			printf("%f ", MVP.arr[4*i + x]);
+		}
+	}
 	// MVP BUILT
+	matrix_4sq MVP_clmn_ord;
+	transpose_mat4sq(&MVP, &MVP_clmn_ord);
 
 	static const GLfloat g_vertex_buffer_data[] = { 
 		-1.0f, -1.0f, 0.0f,
 		 1.0f, -1.0f, 0.0f,
 		 0.0f,  1.0f, 0.0f,
 	};
+
+	printf("\n");
+	vector4 tmp;
+	for (int i = 0; i < 3; i++)
+	{
+		set_vec4(&tmp, g_vertex_buffer_data[3*i], g_vertex_buffer_data[3*i+1], g_vertex_buffer_data[3*i+2], 1);
+		cross_mat4sq_by_vec4(&MVP, &tmp);
+		printf("\n");
+		for (int x = 0; x < 4; x++)
+		{
+			printf("%f ", tmp.arr[x]);
+		}
+	}
 
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
@@ -90,7 +113,7 @@ void run(GLFWwindow* window)
 
 		// Send our transformation to the currently bound shader, 
 		// in the "MVP" uniform
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP.arr);
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP_clmn_ord.arr[0]);
 
 		// 1st attribute buffer : vertices
 		glEnableVertexAttribArray(0);
