@@ -12,16 +12,13 @@ typedef struct matrix_4sq
 
 matrix_4sq* new_mat4sq();
 
-inline void reset_mat4sq(matrix_4sq* matrix)
+static inline void reset_mat4sq(matrix_4sq* matrix)
 {
-	for (int i = 0; i < 16; i++) matrix[i] = 0;
+	for (int i = 0; i < 16; i++) matrix->arr[i] = 0;
 }
-inline void set_identity_mat4sq(matrix_4sq* matrix)
+static inline void set_identity_mat4sq(matrix_4sq* matrix)
 {
-	for (int i = 0; i < 16; i++)
-	{
-		(i / 4 == i % 4) ? matrix[i]=1 : matrix[i]=0;
-	}
+	for (int i = 0; i < 16; i++) matrix->arr[i] = ((i / 4 == i % 4) ? 1 : 0);
 }
 void set_translate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z);
 void set_scale_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z);
@@ -32,41 +29,8 @@ void set_scale_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR
 void set_rotate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z);
 
 static matrix_4sq tmp_mat;
-inline void translate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
-{
-	set_translate_mat4sq(&tmp_mat, delta_x, delta_y, delta_z);
-	cross_mat4sq_by_mat4sq(&tmp_mat, matrix);
-}
-inline void scale_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
-{
-	set_scale_mat4sq(&tmp_mat, delta_x, delta_y, delta_z);
-	cross_mat4sq_by_mat4sq(&tmp_mat, matrix);
-}
 
-/*
-	delta_? must be in rads
-*/
-inline void rotate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
-{
-	set_rotate_mat4sq(&tmp_mat, delta_x, delta_y, delta_z);
-	cross_mat4sq_by_mat4sq(&tmp_mat, matrix);
-}
-
-void set_perspective_mat4sq(matrix_4sq* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT near, const VECTOR_FLT far);
-void set_look_at_mat4sq(matrix_4sq* matrix, const vector3* location, const vector3* fixation, const vector3* rotation);
-
-inline void transform_perspective_mat4sq(matrix_4sq* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT near, const VECTOR_FLT far)
-{
-	set_perspective_mat4sq(&tmp_mat, fov, aspect, near, far);
-	cross_mat4sq_by_mat4sq(&tmp_mat, matrix);
-}
-inline void transform_look_at_mat4sq(matrix_4sq* matrix, const vector3* location, const vector3* fixation, const vector3* rotation)
-{
-	set_look_at_mat4sq(&tmp_mat, location, fixation, rotation);
-	cross_mat4sq_by_mat4sq(&tmp_mat, matrix);
-}
-
-inline static void copy_to_tmp_buf_mat4sq(const matrix_4sq* base)
+static inline void copy_to_tmp_buf_mat4sq(const matrix_4sq* base)
 {
 	tmp_mat.arr[0] = base->arr[0];
 	tmp_mat.arr[1] = base->arr[1];
@@ -89,7 +53,7 @@ inline static void copy_to_tmp_buf_mat4sq(const matrix_4sq* base)
 /*
 	Result stored in second
 */
-inline void cross_mat4sq_by_mat4sq(matrix_4sq* first, matrix_4sq* second)
+static inline matrix_4sq* cross_mat4sq_by_mat4sq(matrix_4sq* first, matrix_4sq* second)
 {
 	copy_to_tmp_buf_mat4sq(second);
 
@@ -112,11 +76,12 @@ inline void cross_mat4sq_by_mat4sq(matrix_4sq* first, matrix_4sq* second)
 	second->arr[13] = first->arr[12] * tmp_mat.arr[1] + first->arr[13] * tmp_mat.arr[5] + first->arr[14] * tmp_mat.arr[9] + first->arr[15] * tmp_mat.arr[13];
 	second->arr[14] = first->arr[12] * tmp_mat.arr[2] + first->arr[13] * tmp_mat.arr[6] + first->arr[14] * tmp_mat.arr[10] + first->arr[15] * tmp_mat.arr[14];
 	second->arr[15] = first->arr[12] * tmp_mat.arr[3] + first->arr[13] * tmp_mat.arr[7] + first->arr[14] * tmp_mat.arr[11] + first->arr[15] * tmp_mat.arr[15];
+	return second;
 }
 /*
 	Result stored in vector
 */
-inline void cross_mat4sq_by_vec4(matrix_4sq* matrix, vector4* vector)
+static inline vector4* cross_mat4sq_by_vec4(matrix_4sq* matrix, vector4* vector)
 {
 	VECTOR_FLT x = vector->arr[0];
 	VECTOR_FLT y = vector->arr[1];
@@ -127,6 +92,41 @@ inline void cross_mat4sq_by_vec4(matrix_4sq* matrix, vector4* vector)
 	vector->arr[1] = x*matrix->arr[4] + y*matrix->arr[5] + z*matrix->arr[6] + w*matrix->arr[7];
 	vector->arr[2] = x*matrix->arr[8] + y*matrix->arr[9] + z*matrix->arr[10] + w*matrix->arr[11];
 	vector->arr[3] = x*matrix->arr[12] + y*matrix->arr[13] + z*matrix->arr[14] + w*matrix->arr[15];
+	return vector;
+}
+
+static inline void translate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
+{
+	set_translate_mat4sq(&tmp_mat, delta_x, delta_y, delta_z);
+	cross_mat4sq_by_mat4sq(&tmp_mat, matrix);
+}
+static inline void scale_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
+{
+	set_scale_mat4sq(&tmp_mat, delta_x, delta_y, delta_z);
+	cross_mat4sq_by_mat4sq(&tmp_mat, matrix);
+}
+
+/*
+	delta_? must be in rads
+*/
+static inline void rotate_mat4sq(matrix_4sq* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
+{
+	set_rotate_mat4sq(&tmp_mat, delta_x, delta_y, delta_z);
+	cross_mat4sq_by_mat4sq(&tmp_mat, matrix);
+}
+
+void set_perspective_mat4sq(matrix_4sq* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT near, const VECTOR_FLT far);
+void set_look_at_mat4sq(matrix_4sq* matrix, const vector3* location, const vector3* fixation, const vector3* rotation);
+
+static inline void transform_perspective_mat4sq(matrix_4sq* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT near, const VECTOR_FLT far)
+{
+	set_perspective_mat4sq(&tmp_mat, fov, aspect, near, far);
+	cross_mat4sq_by_mat4sq(&tmp_mat, matrix);
+}
+static inline void transform_look_at_mat4sq(matrix_4sq* matrix, const vector3* location, const vector3* fixation, const vector3* rotation)
+{
+	set_look_at_mat4sq(&tmp_mat, location, fixation, rotation);
+	cross_mat4sq_by_mat4sq(&tmp_mat, matrix);
 }
 
 #endif

@@ -114,9 +114,9 @@ void set_look_at_mat4sq(matrix_4sq* matrix, const vector3* location, const vecto
 	vector3 y_axis;
 	vector3 z_axis;
 
-	normalize_vec3(sub_vec3s(location, copy_vec3(fixation, z_axis))); // Sets z-axis
-	normalize_vec3(cross_vec3_by_vec3(rotation, copy_vec3(z_axis, x_axis))); // Sets x-axis
-	cross_vec3_by_vec3(z_axis, copy_vec3(x_axis, y_axis)); // Sets y-axis
+	normalize_vec3(sub_vec3s(location, copy_vec3(fixation, &z_axis))); // Sets z-axis
+	normalize_vec3(cross_vec3_by_vec3(rotation, copy_vec3(&z_axis, &x_axis))); // Sets x-axis
+	cross_vec3_by_vec3(&z_axis, copy_vec3(&x_axis, &y_axis)); // Sets y-axis
 
 	matrix->arr[0] = x_axis.arr[0];
 	matrix->arr[1] = y_axis.arr[0];
@@ -133,8 +133,8 @@ void set_look_at_mat4sq(matrix_4sq* matrix, const vector3* location, const vecto
 	matrix->arr[10] = z_axis.arr[2];
 	matrix->arr[11] = 0;
 
-	matrix->arr[12] = -dot_vec3(x_axis, location);
-	matrix->arr[13] = -dot_vec3(y_axis, location);
-	matrix->arr[14] = -dot_vec3(z_axis, location);
+	matrix->arr[12] = -dot_vec3(&x_axis, location);
+	matrix->arr[13] = -dot_vec3(&y_axis, location);
+	matrix->arr[14] = -dot_vec3(&z_axis, location);
 	matrix->arr[15] = 1;
 }

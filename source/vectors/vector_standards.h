@@ -8,7 +8,7 @@ typedef float VECTOR_FLT;
 #define VECTOR_FLT_MIN FLT_MIN;
 #define VECTOR_FLT_MAX FLT_MAX;
 
-inline VECTOR_FLT deg_to_rad(VECTOR_FLT deg)
+static inline VECTOR_FLT deg_to_rad(VECTOR_FLT deg)
 {
 	return (deg * (M_PI / 180));
 }

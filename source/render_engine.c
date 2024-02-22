@@ -22,7 +22,7 @@ GLFWwindow* initialiseGLFWWindow()
 
 	// Open a window and create its OpenGL context
 	GLFWwindow* window; // (In the accompanying source code, this variable is global for simplicity)
-	window = glfwCreateWindow( 1024, 768, "Renderer", NULL, NULL);
+	window = glfwCreateWindow( WINDOW_WIDTH, WINDOW_HEIGHT, "Renderer", NULL, NULL);
 	if( window == NULL )
 	{
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
@@ -55,6 +55,21 @@ void run(GLFWwindow* window)
 	// Create and compile our GLSL program from the shaders
 	GLuint programID = LoadShaders( "./shaders/SimpleVertexShader.vertexshader", "./shaders/SimpleFragmentShader.fragmentshader" );
 
+	// Get a handle for our "MVP" uniform
+	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+	vector3 camera;
+	vector3 fixation;
+	vector3 rotation;
+	set_vec3(&camera, 4, 3, 3);
+	set_vec3(&fixation, 0, 0, 0);
+	set_vec3(&rotation, 0, 1, 0);
+
+	matrix_4sq MVP;
+	set_identity_mat4sq(&MVP); // Model
+	transform_look_at_mat4sq(&MVP, &camera, &fixation, &rotation); // View
+	transform_perspective_mat4sq(&MVP, deg_to_rad(90), (VECTOR_FLT)WINDOW_WIDTH/(VECTOR_FLT)WINDOW_HEIGHT, 0.1f, 100.0f); // Perspective
+	// MVP BUILT
+
 	static const GLfloat g_vertex_buffer_data[] = { 
 		-1.0f, -1.0f, 0.0f,
 		 1.0f, -1.0f, 0.0f,
@@ -72,6 +87,10 @@ void run(GLFWwindow* window)
 
 		// Use our shader
 		glUseProgram(programID);
+
+		// Send our transformation to the currently bound shader, 
+		// in the "MVP" uniform
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP.arr);
 
 		// 1st attribute buffer : vertices
 		glEnableVertexAttribArray(0);

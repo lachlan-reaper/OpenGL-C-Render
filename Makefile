@@ -17,7 +17,7 @@ C_FLAGS += -D_WIN64
 
 .Phony: build
 build:
-	$(CC) $(COMP_FILES) $(C_FLAGS) $(LNK_LIBS) -I $(INC_LIBS) -o render.exe
+	$(CC) $(COMP_FILES) $(C_FLAGS) $(LNK_LIBS) -I $(INC_LIBS) -o render.exe 2> build_error.log
 
 .Phony: run
 run:
