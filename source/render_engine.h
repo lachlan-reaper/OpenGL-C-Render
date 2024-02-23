@@ -15,6 +15,8 @@
 #include "./vectors/matrix_4x4.h"
 #include "./vectors/vector4.h"
 #include "./vectors/vector3.h"
+#include "./objects/camera.h"
+#include "./additive/movement.h"
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 768

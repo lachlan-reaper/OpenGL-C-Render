@@ -31,7 +31,7 @@ void set_rotate_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTO
 /*
 	CAN NOT BE THE SAME OBJ
 */
-static inline matrix_4x4* transpose_mat4x4(const matrix_4x4* orig, matrix_4x4* transp)
+static inline matrix_4x4* transpose_to_mat4x4(const matrix_4x4* orig, matrix_4x4* transp)
 {
 	transp->arr[0] = orig->arr[0];
 	transp->arr[1] = orig->arr[4];
@@ -153,6 +153,28 @@ static inline void transform_look_at_mat4x4(matrix_4x4* matrix, const vector3* l
 	matrix_4x4 tmp_infunc_mat;
 	set_look_at_mat4x4(&tmp_infunc_mat, location, fixation, rotation);
 	cross_mat4x4_by_mat4x4(&tmp_infunc_mat, matrix);
+}
+
+static inline matrix_4x4* transpose_mat4x4(matrix_4x4* transp)
+{
+	copy_to_tmp_buf_mat4x4(transp);
+	transp->arr[0] = tmp_mat.arr[0];
+	transp->arr[1] = tmp_mat.arr[4];
+	transp->arr[2] = tmp_mat.arr[8];
+	transp->arr[3] = tmp_mat.arr[12];
+	transp->arr[4] = tmp_mat.arr[1];
+	transp->arr[5] = tmp_mat.arr[5];
+	transp->arr[6] = tmp_mat.arr[9];
+	transp->arr[7] = tmp_mat.arr[13];
+	transp->arr[8] = tmp_mat.arr[2];
+	transp->arr[9] = tmp_mat.arr[6];
+	transp->arr[10] = tmp_mat.arr[10];
+	transp->arr[11] = tmp_mat.arr[14];
+	transp->arr[12] = tmp_mat.arr[3];
+	transp->arr[13] = tmp_mat.arr[7];
+	transp->arr[14] = tmp_mat.arr[11];
+	transp->arr[15] = tmp_mat.arr[15];
+	return transp;
 }
 
 #endif

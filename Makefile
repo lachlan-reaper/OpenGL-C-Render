@@ -7,9 +7,12 @@ INC_LIBS := $(LIB_PATH)\ $(LIB_PATH)\glfw3dll.lib $(LIB_PATH)\OpenGL32.lib $(LIB
 
 MAIN_FILE := core.c
 COMP_FILES := ./shaders/shader.c 
+COMP_FILES += ./textures/loaders/texture_loader.c
 COMP_FILES += ./source/vectors/vector3.c 
 COMP_FILES += ./source/vectors/vector4.c 
 COMP_FILES += ./source/vectors/matrix_4x4.c 
+COMP_FILES += ./source/objects/camera.c 
+COMP_FILES += ./source/additive/movement.c
 COMP_FILES += ./source/render_engine.c 
 COMP_FILES += $(MAIN_FILE)
 

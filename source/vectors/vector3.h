@@ -29,6 +29,12 @@ static inline void scale_vec3(vector3* vector, const VECTOR_FLT delta_x, const V
 	vector->arr[1] *= delta_y;
 	vector->arr[2] *= delta_z;
 }
+static inline void scale_vec3_xyz(vector3* vector, const VECTOR_FLT delta)
+{
+	vector->arr[0] *= delta;
+	vector->arr[1] *= delta;
+	vector->arr[2] *= delta;
+}
 
 void rotate_vec3_x_axis_rad(vector3* vector, const VECTOR_FLT delta);
 void rotate_vec3_y_axis_rad(vector3* vector, const VECTOR_FLT delta);
