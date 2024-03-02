@@ -6,13 +6,13 @@
 
 #include <GL/gl.h>
 
+#define get_vec3(VEC3, ROW) VEC3[ROW]
+#define get_vec4(VEC4, ROW) VEC4[ROW]
+#define get_4x4(MAT_4X4, COL, ROW) MAT_4X4[4*COL + ROW]
+#define deg_to_rad(DEG) (DEG * (M_PI / 180))
+
 typedef GLfloat VECTOR_FLT;
 #define VECTOR_FLT_MIN FLT_MIN;
 #define VECTOR_FLT_MAX FLT_MAX;
-
-static inline VECTOR_FLT deg_to_rad(VECTOR_FLT deg)
-{
-	return (deg * (M_PI / 180));
-}
 
 #endif

@@ -10,7 +10,7 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 	fptr = fopen(vertex_file_path, "r");
 	if(fptr == NULL)
 	{
-		printf("Error!");
+		printf("Error! While loading: '%s'\n", vertex_file_path);
 		return 0;
 	}
 

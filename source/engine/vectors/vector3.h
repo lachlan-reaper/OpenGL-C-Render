@@ -12,28 +12,28 @@ typedef struct vector3
 vector3* new_vec3(const VECTOR_FLT x, const VECTOR_FLT y, const VECTOR_FLT z);
 static inline void set_vec3(vector3* vector, const VECTOR_FLT x, const VECTOR_FLT y, const VECTOR_FLT z)
 {
-	vector->arr[0] = x;
-	vector->arr[1] = y;
-	vector->arr[2] = z;
+	get_vec3(vector->arr, 0) = x;
+	get_vec3(vector->arr, 1) = y;
+	get_vec3(vector->arr, 2) = z;
 }
 
 static inline void translate_vec3(vector3* vector, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
 {
-	vector->arr[0] += delta_x;
-	vector->arr[1] += delta_y;
-	vector->arr[2] += delta_z;
+	get_vec3(vector->arr, 0) += delta_x;
+	get_vec3(vector->arr, 1) += delta_y;
+	get_vec3(vector->arr, 2) += delta_z;
 }
 static inline void scale_vec3(vector3* vector, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
 {
-	vector->arr[0] *= delta_x;
-	vector->arr[1] *= delta_y;
-	vector->arr[2] *= delta_z;
+	get_vec3(vector->arr, 0) *= delta_x;
+	get_vec3(vector->arr, 1) *= delta_y;
+	get_vec3(vector->arr, 2) *= delta_z;
 }
 static inline void scale_vec3_xyz(vector3* vector, const VECTOR_FLT delta)
 {
-	vector->arr[0] *= delta;
-	vector->arr[1] *= delta;
-	vector->arr[2] *= delta;
+	get_vec3(vector->arr, 0) *= delta;
+	get_vec3(vector->arr, 1) *= delta;
+	get_vec3(vector->arr, 2) *= delta;
 }
 
 void rotate_vec3_x_axis_rad(vector3* vector, const VECTOR_FLT delta);
@@ -90,13 +90,13 @@ static inline vector3* copy_to_vec3(const vector3* base, vector3* copy)
 
 static inline vector3* normalize_vec3(vector3* vector)
 {
-	VECTOR_FLT mag = sqrt(vector->arr[0]*vector->arr[0] + vector->arr[1]*vector->arr[1] + vector->arr[2]*vector->arr[2]);
+	VECTOR_FLT mag = sqrt(get_vec3(vector->arr, 0)*get_vec3(vector->arr, 0) + get_vec3(vector->arr, 1)*get_vec3(vector->arr, 1) + get_vec3(vector->arr, 2)*get_vec3(vector->arr, 2));
 	if (mag != 0)
 	{
 		mag = 1 / mag;
-		vector->arr[0] *= mag;
-		vector->arr[1] *= mag;
-		vector->arr[2] *= mag;
+		get_vec3(vector->arr, 0) *= mag;
+		get_vec3(vector->arr, 1) *= mag;
+		get_vec3(vector->arr, 2) *= mag;
 	}
 	return (vector);
 }

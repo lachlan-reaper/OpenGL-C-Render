@@ -12,10 +12,10 @@ typedef struct vector4
 vector4* new_vec4(const VECTOR_FLT x, const VECTOR_FLT y, const VECTOR_FLT z, const VECTOR_FLT w);
 static inline void set_vec4(vector4* vector, const VECTOR_FLT x, const VECTOR_FLT y, const VECTOR_FLT z, const VECTOR_FLT w)
 {
-	vector->arr[0] = x;
-	vector->arr[1] = y;
-	vector->arr[2] = z;
-	vector->arr[3] = w;
+	get_vec4(vector->arr, 0) = x;
+	get_vec4(vector->arr, 1) = y;
+	get_vec4(vector->arr, 2) = z;
+	get_vec4(vector->arr, 3) = w;
 }
 
 void translate_vec4(vector4* vector, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z);

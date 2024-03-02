@@ -1,5 +1,12 @@
 #include "render_engine.h"
 
+#ifndef VERTEX_SHADER_PATH
+#define VERTEX_SHADER_PATH "./source/engine/shaders/VertexShader.vertexshader" // Default shader
+#endif
+#ifndef FRAGMENT_SHADER_PATH
+#define FRAGMENT_SHADER_PATH "./source/engine/shaders/FragmentShader.fragmentshader" // Default shader
+#endif
+
 static void error_callback(int e, const char *d)
 {printf("Error %d: %s\n", e, d);}
 
@@ -61,13 +68,13 @@ void run(GLFWwindow* window)
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders( "./shaders/VertexShader.vertexshader", "./shaders/FragmentShader.fragmentshader" );
+	GLuint programID = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 
 	// Get a handle for our "MVP" uniform
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 
 	// Load the texture
-	GLuint Texture = loadDDS("./textures/uvtemplate.DDS");
+	GLuint Texture = loadDDS("./source/ext/textures/uvtemplate.DDS");
 	
 	// Get a handle for our "myTextureSampler" uniform
 	GLuint TextureID  = glGetUniformLocation(programID, "myTextureSampler");
@@ -231,7 +238,7 @@ void run(GLFWwindow* window)
 		// Send our transformation to the currently bound shader, 
 		// in the "MVP" uniform
 		calc_camera_mvp(&camera, &MVP);
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP.arr[0]);
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &get_4x4(MVP.arr, 0, 0));
 
 		// Bind our texture in Texture Unit 0
 		glActiveTexture(GL_TEXTURE0);

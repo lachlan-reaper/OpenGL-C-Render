@@ -3,8 +3,8 @@
 
 #include <math.h>
 
-#include "..\vectors\vector3.h"
-#include "..\vectors\matrix_4x4.h"
+#include "../vectors/vector3.h"
+#include "../vectors/matrix_4x4.h"
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 768
@@ -103,13 +103,13 @@ static inline void camera_perspective(const Camera* camera, matrix_4x4* perspect
 static inline void calc_camera_mvp(const Camera* camera, matrix_4x4* MVP)
 {
 	set_identity_mat4x4(MVP); // Model
+
 	matrix_4x4 tmp_mat;
 	camera_look_at(camera, &tmp_mat); // View
 	cross_mat4x4_by_mat4x4(&tmp_mat, MVP);
+	
 	camera_perspective(camera, &tmp_mat); // Perspective
 	cross_mat4x4_by_mat4x4(&tmp_mat, MVP);
-
-	transpose_mat4x4(MVP); // TODO: REMOVE after changing 
 }
 
 #endif

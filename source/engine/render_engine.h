@@ -11,12 +11,12 @@
 // Include GLFW
 #include <GLFW/glfw3.h>
 
-#include "../shaders/shader.h"
+#include "./shaders/shader.h"
 #include "./vectors/matrix_4x4.h"
 #include "./vectors/vector4.h"
 #include "./vectors/vector3.h"
 #include "./objects/camera.h"
-#include "./additive/movement.h"
+#include "../ext/movement.h" // TODO: REMOVE
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 768

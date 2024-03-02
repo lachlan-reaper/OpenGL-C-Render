@@ -4,7 +4,7 @@
 // Include GLFW
 #include <GLFW/glfw3.h>
 
-#include "../objects/camera.h"
+#include "../engine/objects/camera.h"
 
 #define FORWARD_SPEED 3
 #define RIGHT_SPEED 3
