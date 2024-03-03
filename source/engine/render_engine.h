@@ -11,6 +11,8 @@
 // Include GLFW
 #include <GLFW/glfw3.h>
 
+typedef struct render_engine_struct render_engine_struct;
+
 #include "./vectors/vector2.h"
 #include "./vectors/vector3.h"
 #include "./vectors/vector4.h"
@@ -22,17 +24,16 @@
 #include "./objects/camera.h"
 #include "./objects/object_loader.h"
 
-#include "../ext/movement.h" // TODO: REMOVE
-
-#define WINDOW_WIDTH 1024
-#define WINDOW_HEIGHT 768
-
-typedef struct render_engine_struct render_engine_struct;
 typedef int (*re_process_function)(render_engine_struct*);
 
 struct render_engine_struct {
 	GLFWwindow* window;
 	Camera camera;
+
+	int window_width;
+	int window_height;
+	char* vertex_shader_path;
+	char* fragment_shader_path;
 
 	GLuint VertexArrayID;
 	GLuint programID;
@@ -58,8 +59,9 @@ struct render_engine_struct {
 	re_process_function process_function; // return (0: success, !0: failure)
 };
 
-render_engine_struct* initialiseRenderEngine();
-void run(render_engine_struct* re_struct);
+render_engine_struct* initialiseRenderEngine(const int window_width, const int window_height);
+int primeRenderEngine(render_engine_struct* re_struct);
+int run(render_engine_struct* re_struct);
 void terminateWindow();
 
 #endif

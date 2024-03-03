@@ -1,10 +1,11 @@
 #ifndef MOVEMENT_H
 #define MOVEMENT_H
 
+#include "../engine/render_engine.h"
+#include "../engine/objects/camera.h"
+
 // Include GLFW
 #include <GLFW/glfw3.h>
-
-#include "../engine/objects/camera.h"
 
 #define FORWARD_SPEED 3
 #define RIGHT_SPEED 3
@@ -12,6 +13,6 @@
 #define CAMERA_SPEED 1
 #define FOV_SPEED 0.1f
 
-void process_camera_movement(GLFWwindow* window, Camera* camera, const VECTOR_FLT delta_time);
+void process_camera_movement(render_engine_struct* re_struct, const VECTOR_FLT delta_time);
 
 #endif

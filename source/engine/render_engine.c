@@ -1,16 +1,9 @@
 #include "render_engine.h"
 
-#ifndef VERTEX_SHADER_PATH
-#define VERTEX_SHADER_PATH "./source/engine/shaders/VertexShader.vertexshader" // Default shader
-#endif
-#ifndef FRAGMENT_SHADER_PATH
-#define FRAGMENT_SHADER_PATH "./source/engine/shaders/FragmentShader.fragmentshader" // Default shader
-#endif
-
 static void error_callback(int e, const char *d)
 {printf("Error %d: %s\n", e, d);}
 
-render_engine_struct* initialiseRenderEngine() 
+render_engine_struct* initialiseRenderEngine(const int window_width, const int window_height) 
 {
 	glfwSetErrorCallback(error_callback);
 	if (!glfwInit()) 
@@ -29,7 +22,10 @@ render_engine_struct* initialiseRenderEngine()
 
 	// Open a window and create its OpenGL context
 	render_engine_struct* re_struct = calloc(1, sizeof(render_engine_struct));
-	re_struct->window = glfwCreateWindow( WINDOW_WIDTH, WINDOW_HEIGHT, "Renderer", NULL, NULL);
+	re_struct->window_width = window_width;
+	re_struct->window_height = window_height;
+
+	re_struct->window = glfwCreateWindow(re_struct->window_width, re_struct->window_height, "Renderer", NULL, NULL);
 	if( re_struct->window == NULL )
 	{
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
@@ -48,14 +44,27 @@ render_engine_struct* initialiseRenderEngine()
 	glfwSetInputMode(re_struct->window, GLFW_STICKY_KEYS, GL_TRUE);
 	glfwSetInputMode(re_struct->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+	re_struct->fragment_shader_path = NULL;
+	re_struct->vertex_shader_path = NULL;
 	re_struct->prime_function = NULL;
 	re_struct->process_function = NULL;
 
 	return re_struct;
 }
 
-void primeRenderEngine(render_engine_struct* re_struct)
+int primeRenderEngine(render_engine_struct* re_struct)
 {
+	if (re_struct->fragment_shader_path == NULL)
+	{
+		printf("No fragment shader path provided\n");
+		return 1;
+	}
+	if (re_struct->vertex_shader_path == NULL)
+	{
+		printf("No vertex shader path provided\n");
+		return 1;
+	}
+
 	// Dark blue background
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
@@ -71,7 +80,7 @@ void primeRenderEngine(render_engine_struct* re_struct)
 	glBindVertexArray(re_struct->VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-	re_struct->programID = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
+	re_struct->programID = LoadShaders(re_struct->vertex_shader_path, re_struct->fragment_shader_path);
 
 	// Get a handle for our "MVP" uniform
 	re_struct->MatrixID = glGetUniformLocation(re_struct->programID, "MVP");
@@ -79,7 +88,7 @@ void primeRenderEngine(render_engine_struct* re_struct)
 	re_struct->ModelMatrixID = glGetUniformLocation(re_struct->programID, "M");
 
 	// Load the texture
-	re_struct->Texture = loadDDS("./source/ext/textures/cubeuvmap.DDS");
+	re_struct->Texture = loadDDS("./source/ext/textures/cubeuvmap.DDS"); // TODO: REMOVE LITERAL
 	
 	// Get a handle for our "myTextureSampler" uniform
 	re_struct->TextureID  = glGetUniformLocation(re_struct->programID, "myTextureSampler");
@@ -157,13 +166,14 @@ void primeRenderEngine(render_engine_struct* re_struct)
 	set_camera_position(&re_struct->camera, -3, 3, -7);
 
 	set_vec3(&re_struct->lightPos, 4, 4, 4);
+	return 0;
 }
 
 void drawRenderEngine(render_engine_struct* re_struct)
 {
 	// Send our transformation to the currently bound shader, 
 	// in the "MVP" uniform
-	calc_camera_mvp(&re_struct->camera);
+	calc_camera_mvp(&re_struct->camera, re_struct->window_width, re_struct->window_height);
 
 	// Clear the screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -259,11 +269,18 @@ void cleanupRenderEngine(render_engine_struct* re_struct)
 	clean_dyn_array(&re_struct->vertices);
 	clean_dyn_array(&re_struct->uvs);
 	clean_dyn_array(&re_struct->normals);
+
+	glfwTerminate();
 }
 
-void run(render_engine_struct* re_struct) 
+int run(render_engine_struct* re_struct) 
 {
-	primeRenderEngine(re_struct);
+	int res = primeRenderEngine(re_struct);
+	if (res != 0)
+	{
+		printf("Error on priming function: %d\n", res);
+		return 1;
+	}
 
 	if (re_struct->prime_function != NULL)
 	{
@@ -272,7 +289,8 @@ void run(render_engine_struct* re_struct)
 		if (res != 0)
 		{
 			printf("Error on priming function: %d\n", res);
-			return;
+			cleanupRenderEngine(re_struct);
+			return 2;
 		}
 	}
 
@@ -291,7 +309,8 @@ void run(render_engine_struct* re_struct)
 			if (res != 0)
 			{
 				printf("Error on process function: %d\n", res);
-				break;
+				cleanupRenderEngine(re_struct);
+				return 3;
 			}
 			drawRenderEngine(re_struct);
 		} // Check if the ESC key was pressed or the window was closed
@@ -300,10 +319,5 @@ void run(render_engine_struct* re_struct)
 	}
 	
 	cleanupRenderEngine(re_struct);
-	terminateWindow();
-}
-
-void terminateWindow()
-{
-	glfwTerminate();
+	return 0;
 }

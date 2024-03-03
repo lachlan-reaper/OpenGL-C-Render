@@ -6,9 +6,6 @@
 #include "../vectors/vector3.h"
 #include "../vectors/matrix_4x4.h"
 
-#define WINDOW_WIDTH 1024
-#define WINDOW_HEIGHT 768
-
 typedef struct Camera {
 	vector3 position;
 	vector3 direction;
@@ -25,7 +22,7 @@ typedef struct Camera {
 	matrix_4x4 MVP;
 } Camera;
 
-void set_camera(Camera* camera, const VECTOR_FLT horizontal_angle, VECTOR_FLT vertical_angle, VECTOR_FLT FOV);
+void set_camera(Camera* camera, const VECTOR_FLT horizontal_angle, const VECTOR_FLT vertical_angle, const VECTOR_FLT FOV);
 static inline void set_camera_position(Camera* camera, const VECTOR_FLT x, const VECTOR_FLT y, const VECTOR_FLT z)
 {
 	set_vec3(&camera->position, x, y, z);
@@ -96,16 +93,16 @@ static inline void camera_look_at(const Camera* camera, matrix_4x4* view)
 	set_look_at_mat4x4(view, &camera->position, &look_at, &camera->up);
 }
 
-static inline void camera_perspective(const Camera* camera, matrix_4x4* perspective)
+static inline void camera_perspective(const Camera* camera, matrix_4x4* perspective, const int window_width, const int window_height)
 {
-	set_perspective_mat4x4(perspective, deg_to_rad(camera->FOV), (VECTOR_FLT)WINDOW_WIDTH/(VECTOR_FLT)WINDOW_HEIGHT, 0.1f, 100.0f);
+	set_perspective_mat4x4(perspective, deg_to_rad(camera->FOV), (VECTOR_FLT)window_width/(VECTOR_FLT)window_height, 0.1f, 100.0f);
 }
 
 /*
 	GLSL formatted MVP is stored in model
 	TODO: include offsets to MODEL
 */
-static inline void calc_camera_mvp(Camera* camera)
+static inline void calc_camera_mvp(Camera* camera, const int window_width, const int window_height)
 {
 	set_identity_mat4x4(&camera->model); // Model
 	copy_to_mat4x4(&camera->model, &camera->MVP);
@@ -113,7 +110,7 @@ static inline void calc_camera_mvp(Camera* camera)
 	camera_look_at(camera, &camera->view); // View
 	cross_mat4x4_by_mat4x4(&camera->view, &camera->MVP);
 	
-	camera_perspective(camera, &camera->perspective); // Perspective
+	camera_perspective(camera, &camera->perspective, window_width, window_height); // Perspective
 	cross_mat4x4_by_mat4x4(&camera->perspective, &camera->MVP);
 }
 
