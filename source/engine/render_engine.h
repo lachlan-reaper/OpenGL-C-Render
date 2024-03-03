@@ -30,11 +30,29 @@
 typedef struct render_engine_struct {
 	GLFWwindow* window;
 	Camera camera;
+
+	GLuint VertexArrayID;
 	GLuint programID;
-	
+	GLuint MatrixID;
+	GLuint ViewMatrixID;
+	GLuint ModelMatrixID;
+	GLuint TextureID;
+	GLuint LightID;
+
+	GLuint Texture; // TODO: TBU
+
+	GLuint vertexbuffer;
+	GLuint uvbuffer;
+	GLuint normalbuffer;
+
 	dyn_array vertices;
 	dyn_array uvs;
 	dyn_array normals;
+
+	vector3 lightPos;
+
+	double current_time;
+	double last_time;
 } render_engine_struct;
 
 render_engine_struct* initialiseRenderEngine();

@@ -51,7 +51,7 @@ render_engine_struct* initialiseRenderEngine()
 	return re_struct;
 }
 
-void run(render_engine_struct* re_struct) 
+void primeRenderEngine(render_engine_struct* re_struct)
 {
 	// Dark blue background
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
@@ -64,23 +64,22 @@ void run(render_engine_struct* re_struct)
 	// Cull triangles which normal is not towards the camera
 	glEnable(GL_CULL_FACE);
 
-	GLuint VertexArrayID;
-	glGenVertexArrays(1, &VertexArrayID);
-	glBindVertexArray(VertexArrayID);
+	glGenVertexArrays(1, &re_struct->VertexArrayID);
+	glBindVertexArray(re_struct->VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
 	re_struct->programID = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 
 	// Get a handle for our "MVP" uniform
-	GLuint MatrixID = glGetUniformLocation(re_struct->programID, "MVP");
-	GLuint ViewMatrixID = glGetUniformLocation(re_struct->programID, "V");
-	GLuint ModelMatrixID = glGetUniformLocation(re_struct->programID, "M");
+	re_struct->MatrixID = glGetUniformLocation(re_struct->programID, "MVP");
+	re_struct->ViewMatrixID = glGetUniformLocation(re_struct->programID, "V");
+	re_struct->ModelMatrixID = glGetUniformLocation(re_struct->programID, "M");
 
 	// Load the texture
-	GLuint Texture = loadDDS("./source/ext/textures/cubeuvmap.DDS");
+	re_struct->Texture = loadDDS("./source/ext/textures/cubeuvmap.DDS");
 	
 	// Get a handle for our "myTextureSampler" uniform
-	GLuint TextureID  = glGetUniformLocation(re_struct->programID, "myTextureSampler");
+	re_struct->TextureID  = glGetUniformLocation(re_struct->programID, "myTextureSampler");
 
 	// Read our .obj file
 	set_dyn_array(&re_struct->vertices, DYN_ARRAY_VECTOR_3_TYPE);
@@ -88,19 +87,16 @@ void run(render_engine_struct* re_struct)
 	set_dyn_array(&re_struct->normals, DYN_ARRAY_VECTOR_3_TYPE);
 	loadOBJ("./source/ext/objects/suzanne.obj", &re_struct->vertices, &re_struct->uvs, &re_struct->normals); // TODO: REMOVE LITERAL
 
-	GLuint vertexbuffer;
-	glGenBuffers(1, &vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glGenBuffers(1, &re_struct->vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, re_struct->vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, re_struct->vertices.current_size * sizeof(vector3), &dyn_get_vec3(re_struct->vertices.data, 0), GL_STATIC_DRAW);
 
-	GLuint uvbuffer;
-	glGenBuffers(1, &uvbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+	glGenBuffers(1, &re_struct->uvbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, re_struct->uvbuffer);
 	glBufferData(GL_ARRAY_BUFFER, re_struct->uvs.current_size * sizeof(vector2), &dyn_get_vec2(re_struct->uvs.data, 0), GL_STATIC_DRAW);
 
-	GLuint normalbuffer;
-	glGenBuffers(1, &normalbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+	glGenBuffers(1, &re_struct->normalbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, re_struct->normalbuffer);
 	glBufferData(GL_ARRAY_BUFFER, re_struct->normals.current_size * sizeof(vector3), &dyn_get_vec3(re_struct->normals.data, 0), GL_STATIC_DRAW);
 	
 	/* Colour
@@ -152,118 +148,131 @@ void run(render_engine_struct* re_struct)
 
 	// Get a handle for our "LightPosition" uniform
 	glUseProgram(re_struct->programID);
-	GLuint LightID = glGetUniformLocation(re_struct->programID, "LightPosition_worldspace");
+	re_struct->LightID = glGetUniformLocation(re_struct->programID, "LightPosition_worldspace");
 
-	double current_time = glfwGetTime();
-	double last_time;
+	re_struct->current_time = glfwGetTime();
 	set_camera(&re_struct->camera, deg_to_rad(24.0f), deg_to_rad(-24.0f), 45.0f);
 	set_camera_position(&re_struct->camera, -3, 3, -7);
 
-	vector3 lightPos;
-	set_vec3(&lightPos, 4, 4, 4);
+	set_vec3(&re_struct->lightPos, 4, 4, 4);
+}
 
-	do {
-		// Clear the screen
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+void drawRenderEngine(render_engine_struct* re_struct)
+{
+	// Clear the screen
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Use our shader
-		glUseProgram(re_struct->programID);
+	// Use our shader
+	glUseProgram(re_struct->programID);
 
-		last_time = current_time;
-		current_time = glfwGetTime();
-		process_camera_movement(re_struct->window, &re_struct->camera, (VECTOR_FLT)(current_time - last_time));
+	re_struct->last_time = re_struct->current_time;
+	re_struct->current_time = glfwGetTime();
+	process_camera_movement(re_struct->window, &re_struct->camera, (VECTOR_FLT)(re_struct->current_time - re_struct->last_time));
 
-		// Send our transformation to the currently bound shader, 
-		// in the "MVP" uniform
-		calc_camera_mvp(&re_struct->camera);
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.MVP.arr, 0, 0));
-		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.model.arr, 0, 0));
-		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.view.arr, 0, 0));
+	// Send our transformation to the currently bound shader, 
+	// in the "MVP" uniform
+	calc_camera_mvp(&re_struct->camera);
+	glUniformMatrix4fv(re_struct->MatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.MVP.arr, 0, 0));
+	glUniformMatrix4fv(re_struct->ModelMatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.model.arr, 0, 0));
+	glUniformMatrix4fv(re_struct->ViewMatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.view.arr, 0, 0));
 
-		glUniform3f(LightID, get_vec3(lightPos.arr, 0), get_vec3(lightPos.arr, 1), get_vec3(lightPos.arr, 2));
+	glUniform3f(re_struct->LightID, get_vec3(re_struct->lightPos.arr, 0), get_vec3(re_struct->lightPos.arr, 1), get_vec3(re_struct->lightPos.arr, 2));
 
-		// Bind our texture in Texture Unit 0
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, Texture);
-		// Set our "myTextureSampler" sampler to use Texture Unit 0
-		glUniform1i(TextureID, 0);
+	// Bind our texture in Texture Unit 0
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, re_struct->Texture);
+	// Set our "myTextureSampler" sampler to use Texture Unit 0
+	glUniform1i(re_struct->TextureID, 0);
 
-		// 1st attribute buffer : vertices
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(
-			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-			3,                  // size
-			GL_FLOAT,           // type
-			GL_FALSE,           // normalized?
-			0,                  // stride
-			(void*)0            // array buffer offset
-		);
+	// 1st attribute buffer : vertices
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, re_struct->vertexbuffer);
+	glVertexAttribPointer(
+		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+		3,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		0,                  // stride
+		(void*)0            // array buffer offset
+	);
 
-		// 2nd attribute buffer : uvs
-		glEnableVertexAttribArray(1);
-		glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-		glVertexAttribPointer(
-			1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
-			2,                                // size : U+V => 2
-			GL_FLOAT,                         // type
-			GL_FALSE,                         // normalized?
-			0,                                // stride
-			(void*)0                          // array buffer offset
-		);
+	// 2nd attribute buffer : uvs
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, re_struct->uvbuffer);
+	glVertexAttribPointer(
+		1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+		2,                                // size : U+V => 2
+		GL_FLOAT,                         // type
+		GL_FALSE,                         // normalized?
+		0,                                // stride
+		(void*)0                          // array buffer offset
+	);
 
-		/* Colours
-		// 2nd attribute buffer : colors
-		glEnableVertexAttribArray(1);
-		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-		glVertexAttribPointer(
-			1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
-			3,                                // size
-			GL_FLOAT,                         // type
-			GL_FALSE,                         // normalized?
-			0,                                // stride
-			(void*)0                          // array buffer offset
-		);
-		*/
+	/* Colours
+	// 2nd attribute buffer : colors
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+	glVertexAttribPointer(
+		1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+		3,                                // size
+		GL_FLOAT,                         // type
+		GL_FALSE,                         // normalized?
+		0,                                // stride
+		(void*)0                          // array buffer offset
+	);
+	*/
 
-		// 3rd attribute buffer : normals
-		glEnableVertexAttribArray(2);
-		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-		glVertexAttribPointer(
-			2,                                // attribute
-			3,                                // size
-			GL_FLOAT,                         // type
-			GL_FALSE,                         // normalized?
-			0,                                // stride
-			(void*)0                          // array buffer offset
-		);
+	// 3rd attribute buffer : normals
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, re_struct->normalbuffer);
+	glVertexAttribPointer(
+		2,                                // attribute
+		3,                                // size
+		GL_FLOAT,                         // type
+		GL_FALSE,                         // normalized?
+		0,                                // stride
+		(void*)0                          // array buffer offset
+	);
 
-		// Draw the triangle !
-		glDrawArrays(GL_TRIANGLES, 0, re_struct->vertices.current_size); // 3 indices starting at 0 -> 1 triangle
+	// Draw the triangle !
+	glDrawArrays(GL_TRIANGLES, 0, re_struct->vertices.current_size); // 3 indices starting at 0 -> 1 triangle
 
-		glDisableVertexAttribArray(0);
-		glDisableVertexAttribArray(1);
-		glDisableVertexAttribArray(2);
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
 
-		// Swap buffers
-		glfwSwapBuffers(re_struct->window);
-		glfwPollEvents();
+	// Swap buffers
+	glfwSwapBuffers(re_struct->window);
+	glfwPollEvents();
+}
 
-	} // Check if the ESC key was pressed or the window was closed
-	while( glfwGetKey(re_struct->window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-		glfwWindowShouldClose(re_struct->window) == 0 );
-	
+void cleanupRenderEngine(render_engine_struct* re_struct)
+{
 	// Cleanup VBO
-	glDeleteBuffers(1, &vertexbuffer);
-	glDeleteBuffers(1, &uvbuffer);
+	glDeleteBuffers(1, &re_struct->vertexbuffer);
+	glDeleteBuffers(1, &re_struct->uvbuffer);
+	glDeleteBuffers(1, &re_struct->normalbuffer);
 	// glDeleteBuffers(1, &colorbuffer);
 	glDeleteProgram(re_struct->programID);
-	glDeleteTextures(1, &Texture);
-	glDeleteVertexArrays(1, &VertexArrayID);
+	glDeleteTextures(1, &re_struct->Texture);
+	glDeleteVertexArrays(1, &re_struct->VertexArrayID);
 
 	clean_dyn_array(&re_struct->vertices);
 	clean_dyn_array(&re_struct->uvs);
 	clean_dyn_array(&re_struct->normals);
+}
+
+void run(render_engine_struct* re_struct) 
+{
+	primeRenderEngine(re_struct);
+
+	do {
+		drawRenderEngine(re_struct);
+	} // Check if the ESC key was pressed or the window was closed
+	while( glfwGetKey(re_struct->window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(re_struct->window) == 0 );
+	
+	cleanupRenderEngine(re_struct);
+	terminateWindow();
 }
 
 void terminateWindow()
