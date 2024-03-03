@@ -11,11 +11,17 @@
 // Include GLFW
 #include <GLFW/glfw3.h>
 
-#include "./shaders/shader.h"
-#include "./vectors/matrix_4x4.h"
-#include "./vectors/vector4.h"
+#include "./vectors/vector2.h"
 #include "./vectors/vector3.h"
+#include "./vectors/vector4.h"
+#include "./vectors/matrix_4x4.h"
+#include "./vectors/dyn_array.h"
+
+#include "./shaders/shader.h"
+#include "./textures/texture_loader.h"
 #include "./objects/camera.h"
+#include "./objects/object_loader.h"
+
 #include "../ext/movement.h" // TODO: REMOVE
 
 #define WINDOW_WIDTH 1024

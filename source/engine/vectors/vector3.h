@@ -82,9 +82,9 @@ static inline void transform_all_vec3_deg(vector3* vector,
 
 static inline vector3* copy_to_vec3(const vector3* base, vector3* copy)
 {
-	copy->arr[0] = base->arr[0];
-	copy->arr[1] = base->arr[1];
-	copy->arr[2] = base->arr[2];
+	get_vec3(copy->arr, 0) = get_vec3(base->arr, 0);
+	get_vec3(copy->arr, 1) = get_vec3(base->arr, 1);
+	get_vec3(copy->arr, 2) = get_vec3(base->arr, 2);
 	return copy;
 }
 
@@ -103,7 +103,7 @@ static inline vector3* normalize_vec3(vector3* vector)
 
 static inline VECTOR_FLT dot_vec3(const vector3* first, const vector3* second)
 {
-	return (first->arr[0]*second->arr[0] + first->arr[1]*second->arr[1] + first->arr[2]*second->arr[2]);
+	return (get_vec3(first->arr, 0)*get_vec3(second->arr, 0) + get_vec3(first->arr, 1)*get_vec3(second->arr, 1) + get_vec3(first->arr, 2)*get_vec3(second->arr, 2));
 }
 
 /*
@@ -111,9 +111,9 @@ static inline VECTOR_FLT dot_vec3(const vector3* first, const vector3* second)
 */
 static inline vector3* add_vec3s(const vector3* first, vector3* second)
 {
-	second->arr[0] += first->arr[0];
-	second->arr[1] += first->arr[1];
-	second->arr[2] += first->arr[2];
+	get_vec3(second->arr, 0) += get_vec3(first->arr, 0);
+	get_vec3(second->arr, 1) += get_vec3(first->arr, 1);
+	get_vec3(second->arr, 2) += get_vec3(first->arr, 2);
 	return second;
 }
 
@@ -122,9 +122,9 @@ static inline vector3* add_vec3s(const vector3* first, vector3* second)
 */
 static inline vector3* sub_vec3s(const vector3* first, vector3* second)
 {
-	second->arr[0] = first->arr[0] - second->arr[0];
-	second->arr[1] = first->arr[1] - second->arr[1];
-	second->arr[2] = first->arr[2] - second->arr[2];
+	get_vec3(second->arr, 0) = get_vec3(first->arr, 0) - get_vec3(second->arr, 0);
+	get_vec3(second->arr, 1) = get_vec3(first->arr, 1) - get_vec3(second->arr, 1);
+	get_vec3(second->arr, 2) = get_vec3(first->arr, 2) - get_vec3(second->arr, 2);
 	return second;
 }
 
@@ -133,12 +133,12 @@ static inline vector3* sub_vec3s(const vector3* first, vector3* second)
 */
 static inline vector3* cross_vec3_by_vec3(const vector3* first, vector3* second)
 {
-	VECTOR_FLT x = second->arr[0];
-	VECTOR_FLT y = second->arr[1];
-	VECTOR_FLT z = second->arr[2];
-	second->arr[0] = first->arr[1]*z - first->arr[2]*y;
-	second->arr[1] = first->arr[2]*x - first->arr[0]*z;
-	second->arr[2] = first->arr[0]*y - first->arr[1]*x;
+	VECTOR_FLT x = get_vec3(second->arr, 0);
+	VECTOR_FLT y = get_vec3(second->arr, 1);
+	VECTOR_FLT z = get_vec3(second->arr, 2);
+	get_vec3(second->arr, 0) = get_vec3(first->arr, 1)*z - get_vec3(first->arr, 2)*y;
+	get_vec3(second->arr, 1) = get_vec3(first->arr, 2)*x - get_vec3(first->arr, 0)*z;
+	get_vec3(second->arr, 2) = get_vec3(first->arr, 0)*y - get_vec3(first->arr, 1)*x;
 	return second;
 }
 

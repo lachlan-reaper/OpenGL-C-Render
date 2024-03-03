@@ -79,6 +79,15 @@ void run(GLFWwindow* window)
 	// Get a handle for our "myTextureSampler" uniform
 	GLuint TextureID  = glGetUniformLocation(programID, "myTextureSampler");
 
+	// Read our .obj file
+	static dyn_array vertices;
+	static dyn_array uvs;
+	static dyn_array normals; // Won't be used at the moment.
+	set_dyn_array(&vertices, DYN_ARRAY_VECTOR_3_TYPE);
+	set_dyn_array(&uvs, DYN_ARRAY_VECTOR_2_TYPE);
+	set_dyn_array(&normals, DYN_ARRAY_VECTOR_3_TYPE);
+	loadOBJ("./source/ext/objects/cube.obj", &vertices, &uvs, &normals);
+
 	// Our vertices. Three consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
 	// A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
 	static const GLfloat g_vertex_buffer_data[] = { 

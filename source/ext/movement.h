@@ -12,6 +12,6 @@
 #define CAMERA_SPEED 1
 #define FOV_SPEED 0.1f
 
-void process_camera_movement(const GLFWwindow* window, Camera* camera, const VECTOR_FLT delta_time);
+void process_camera_movement(GLFWwindow* window, Camera* camera, const VECTOR_FLT delta_time);
 
 #endif

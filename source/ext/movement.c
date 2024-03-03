@@ -1,6 +1,6 @@
 #include "movement.h"
 
-void process_camera_movement(const GLFWwindow* window, Camera* camera, const VECTOR_FLT delta_time)
+void process_camera_movement(GLFWwindow* window, Camera* camera, const VECTOR_FLT delta_time)
 {
 	VECTOR_FLT forward;
 	VECTOR_FLT right;
