@@ -74,7 +74,7 @@ void run(GLFWwindow* window)
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 
 	// Load the texture
-	GLuint Texture = loadDDS("./source/ext/textures/uvtemplate.DDS");
+	GLuint Texture = loadDDS("./source/ext/textures/cubeuvmap.DDS");
 	
 	// Get a handle for our "myTextureSampler" uniform
 	GLuint TextureID  = glGetUniformLocation(programID, "myTextureSampler");
@@ -86,98 +86,17 @@ void run(GLFWwindow* window)
 	set_dyn_array(&vertices, DYN_ARRAY_VECTOR_3_TYPE);
 	set_dyn_array(&uvs, DYN_ARRAY_VECTOR_2_TYPE);
 	set_dyn_array(&normals, DYN_ARRAY_VECTOR_3_TYPE);
-	loadOBJ("./source/ext/objects/cube.obj", &vertices, &uvs, &normals);
-
-	// Our vertices. Three consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
-	// A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
-	static const GLfloat g_vertex_buffer_data[] = { 
-		-1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-		 1.0f, 1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f,-1.0f,
-		 1.0f,-1.0f,-1.0f,
-		 1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f,-1.0f, 1.0f,
-		 1.0f,-1.0f, 1.0f,
-		 1.0f, 1.0f, 1.0f,
-		 1.0f,-1.0f,-1.0f,
-		 1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f,-1.0f,
-		 1.0f, 1.0f, 1.0f,
-		 1.0f,-1.0f, 1.0f,
-		 1.0f, 1.0f, 1.0f,
-		 1.0f, 1.0f,-1.0f,
-		-1.0f, 1.0f,-1.0f,
-		 1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		 1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-		 1.0f,-1.0f, 1.0f
-	};
-	
-	// Two UV coordinatesfor each vertex. They were created with Blender.
-	static const GLfloat g_uv_buffer_data[] = { 
-		0.000059f, 0.000004f, 
-		0.000103f, 0.336048f, 
-		0.335973f, 0.335903f, 
-		1.000023f, 0.000013f, 
-		0.667979f, 0.335851f, 
-		0.999958f, 0.336064f, 
-		0.667979f, 0.335851f, 
-		0.336024f, 0.671877f, 
-		0.667969f, 0.671889f, 
-		1.000023f, 0.000013f, 
-		0.668104f, 0.000013f, 
-		0.667979f, 0.335851f, 
-		0.000059f, 0.000004f, 
-		0.335973f, 0.335903f, 
-		0.336098f, 0.000071f, 
-		0.667979f, 0.335851f, 
-		0.335973f, 0.335903f, 
-		0.336024f, 0.671877f, 
-		1.000004f, 0.671847f, 
-		0.999958f, 0.336064f, 
-		0.667979f, 0.335851f, 
-		0.668104f, 0.000013f, 
-		0.335973f, 0.335903f, 
-		0.667979f, 0.335851f, 
-		0.335973f, 0.335903f, 
-		0.668104f, 0.000013f, 
-		0.336098f, 0.000071f, 
-		0.000103f, 0.336048f, 
-		0.000004f, 0.671870f, 
-		0.336024f, 0.671877f, 
-		0.000103f, 0.336048f, 
-		0.336024f, 0.671877f, 
-		0.335973f, 0.335903f, 
-		0.667969f, 0.671889f, 
-		1.000004f, 0.671847f, 
-		0.667979f, 0.335851f
-	};
+	loadOBJ("./source/ext/objects/cube.obj", &vertices, &uvs, &normals); // TODO: REMOVE LITERAL
 
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.current_size * sizeof(vector3), &dyn_get_vec3(vertices.data, 0), GL_STATIC_DRAW);
 
 	GLuint uvbuffer;
 	glGenBuffers(1, &uvbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, uvs.current_size * sizeof(vector2), &dyn_get_vec2(uvs.data, 0), GL_STATIC_DRAW);
 	
 	/* Colour
 	// One color for each vertex. They were generated randomly.
@@ -294,7 +213,7 @@ void run(GLFWwindow* window)
 		*/
 
 		// Draw the triangle !
-		glDrawArrays(GL_TRIANGLES, 0, 12*3); // 3 indices starting at 0 -> 1 triangle
+		glDrawArrays(GL_TRIANGLES, 0, vertices.current_size); // 3 indices starting at 0 -> 1 triangle
 
 		glDisableVertexAttribArray(0);
 
@@ -314,6 +233,10 @@ void run(GLFWwindow* window)
 	glDeleteTextures(1, &Texture);
 	glDeleteVertexArrays(1, &VertexArrayID);
 	glDeleteProgram(programID);
+
+	clean_dyn_array(&vertices);
+	clean_dyn_array(&uvs);
+	clean_dyn_array(&normals);
 }
 
 void terminateWindow()

@@ -128,4 +128,9 @@ static inline void* add_slot_dyn_array(dyn_array* dyn_struct)
 	return get_last_dyn_array(dyn_struct);
 }
 
+static inline void clean_dyn_array(dyn_array* dyn_struct)
+{
+	if (dyn_struct->data != NULL) free(dyn_struct->data);
+}
+
 #endif

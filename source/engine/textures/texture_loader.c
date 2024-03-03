@@ -21,6 +21,8 @@ GLuint loadDDS(const char * imagepath){
 		return 0; 
 	}
 	
+	printf("Loading DDS texture: '%s'\n", imagepath);
+	
 	/* get the surface desc */ 
 	fread(&header, 124, 1, fp); 
 
