@@ -27,7 +27,10 @@
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 768
 
-typedef struct render_engine_struct {
+typedef struct render_engine_struct render_engine_struct;
+typedef int (*re_process_function)(render_engine_struct*);
+
+struct render_engine_struct {
 	GLFWwindow* window;
 	Camera camera;
 
@@ -51,9 +54,9 @@ typedef struct render_engine_struct {
 
 	vector3 lightPos;
 
-	double current_time;
-	double last_time;
-} render_engine_struct;
+	re_process_function prime_function; // return (0: success, !0: failure)
+	re_process_function process_function; // return (0: success, !0: failure)
+};
 
 render_engine_struct* initialiseRenderEngine();
 void run(render_engine_struct* re_struct);

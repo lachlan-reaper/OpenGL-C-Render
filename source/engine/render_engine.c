@@ -48,6 +48,9 @@ render_engine_struct* initialiseRenderEngine()
 	glfwSetInputMode(re_struct->window, GLFW_STICKY_KEYS, GL_TRUE);
 	glfwSetInputMode(re_struct->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+	re_struct->prime_function = NULL;
+	re_struct->process_function = NULL;
+
 	return re_struct;
 }
 
@@ -150,7 +153,6 @@ void primeRenderEngine(render_engine_struct* re_struct)
 	glUseProgram(re_struct->programID);
 	re_struct->LightID = glGetUniformLocation(re_struct->programID, "LightPosition_worldspace");
 
-	re_struct->current_time = glfwGetTime();
 	set_camera(&re_struct->camera, deg_to_rad(24.0f), deg_to_rad(-24.0f), 45.0f);
 	set_camera_position(&re_struct->camera, -3, 3, -7);
 
@@ -159,19 +161,16 @@ void primeRenderEngine(render_engine_struct* re_struct)
 
 void drawRenderEngine(render_engine_struct* re_struct)
 {
+	// Send our transformation to the currently bound shader, 
+	// in the "MVP" uniform
+	calc_camera_mvp(&re_struct->camera);
+
 	// Clear the screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Use our shader
 	glUseProgram(re_struct->programID);
 
-	re_struct->last_time = re_struct->current_time;
-	re_struct->current_time = glfwGetTime();
-	process_camera_movement(re_struct->window, &re_struct->camera, (VECTOR_FLT)(re_struct->current_time - re_struct->last_time));
-
-	// Send our transformation to the currently bound shader, 
-	// in the "MVP" uniform
-	calc_camera_mvp(&re_struct->camera);
 	glUniformMatrix4fv(re_struct->MatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.MVP.arr, 0, 0));
 	glUniformMatrix4fv(re_struct->ModelMatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.model.arr, 0, 0));
 	glUniformMatrix4fv(re_struct->ViewMatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.view.arr, 0, 0));
@@ -266,10 +265,39 @@ void run(render_engine_struct* re_struct)
 {
 	primeRenderEngine(re_struct);
 
-	do {
-		drawRenderEngine(re_struct);
-	} // Check if the ESC key was pressed or the window was closed
-	while( glfwGetKey(re_struct->window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(re_struct->window) == 0 );
+	if (re_struct->prime_function != NULL)
+	{
+		int res;
+		res = re_struct->prime_function(re_struct);
+		if (res != 0)
+		{
+			printf("Error on priming function: %d\n", res);
+			return;
+		}
+	}
+
+	if (re_struct->process_function == NULL)
+	{
+		do {
+			drawRenderEngine(re_struct);
+		} // Check if the ESC key was pressed or the window was closed
+		while( glfwGetKey(re_struct->window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(re_struct->window) == 0 );
+	}
+	else
+	{
+		int res;
+		do {
+			res = re_struct->process_function(re_struct);
+			if (res != 0)
+			{
+				printf("Error on process function: %d\n", res);
+				break;
+			}
+			drawRenderEngine(re_struct);
+		} // Check if the ESC key was pressed or the window was closed
+		while( glfwGetKey(re_struct->window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(re_struct->window) == 0 );
+
+	}
 	
 	cleanupRenderEngine(re_struct);
 	terminateWindow();
