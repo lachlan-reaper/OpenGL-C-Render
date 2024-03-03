@@ -178,4 +178,25 @@ static inline matrix_4x4* transpose_mat4x4(matrix_4x4* transp)
 	return transp;
 }
 
+static inline matrix_4x4* copy_to_mat4x4(const matrix_4x4* base, matrix_4x4* copy)
+{
+	get_4x4(copy->arr, 0, 0) = get_4x4(base->arr, 0, 0);
+	get_4x4(copy->arr, 0, 1) = get_4x4(base->arr, 0, 1);
+	get_4x4(copy->arr, 0, 2) = get_4x4(base->arr, 0, 2);
+	get_4x4(copy->arr, 0, 3) = get_4x4(base->arr, 0, 3);
+	get_4x4(copy->arr, 1, 0) = get_4x4(base->arr, 1, 0);
+	get_4x4(copy->arr, 1, 1) = get_4x4(base->arr, 1, 1);
+	get_4x4(copy->arr, 1, 2) = get_4x4(base->arr, 1, 2);
+	get_4x4(copy->arr, 1, 3) = get_4x4(base->arr, 1, 3);
+	get_4x4(copy->arr, 2, 0) = get_4x4(base->arr, 2, 0);
+	get_4x4(copy->arr, 2, 1) = get_4x4(base->arr, 2, 1);
+	get_4x4(copy->arr, 2, 2) = get_4x4(base->arr, 2, 2);
+	get_4x4(copy->arr, 2, 3) = get_4x4(base->arr, 2, 3);
+	get_4x4(copy->arr, 3, 0) = get_4x4(base->arr, 3, 0);
+	get_4x4(copy->arr, 3, 1) = get_4x4(base->arr, 3, 1);
+	get_4x4(copy->arr, 3, 2) = get_4x4(base->arr, 3, 2);
+	get_4x4(copy->arr, 3, 3) = get_4x4(base->arr, 3, 3);
+	return copy;
+}
+
 #endif

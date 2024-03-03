@@ -18,6 +18,11 @@ typedef struct Camera {
 	VECTOR_FLT horizontal_angle;
 	VECTOR_FLT vertical_angle;
 	VECTOR_FLT FOV;
+
+	matrix_4x4 model;
+	matrix_4x4 view;
+	matrix_4x4 perspective;
+	matrix_4x4 MVP;
 } Camera;
 
 void set_camera(Camera* camera, const VECTOR_FLT horizontal_angle, VECTOR_FLT vertical_angle, VECTOR_FLT FOV);
@@ -100,16 +105,16 @@ static inline void camera_perspective(const Camera* camera, matrix_4x4* perspect
 	GLSL formatted MVP is stored in model
 	TODO: include offsets to MODEL
 */
-static inline void calc_camera_mvp(const Camera* camera, matrix_4x4* MVP)
+static inline void calc_camera_mvp(Camera* camera)
 {
-	set_identity_mat4x4(MVP); // Model
+	set_identity_mat4x4(&camera->model); // Model
+	copy_to_mat4x4(&camera->model, &camera->MVP);
 
-	matrix_4x4 tmp_mat;
-	camera_look_at(camera, &tmp_mat); // View
-	cross_mat4x4_by_mat4x4(&tmp_mat, MVP);
+	camera_look_at(camera, &camera->view); // View
+	cross_mat4x4_by_mat4x4(&camera->view, &camera->MVP);
 	
-	camera_perspective(camera, &tmp_mat); // Perspective
-	cross_mat4x4_by_mat4x4(&tmp_mat, MVP);
+	camera_perspective(camera, &camera->perspective); // Perspective
+	cross_mat4x4_by_mat4x4(&camera->perspective, &camera->MVP);
 }
 
 #endif

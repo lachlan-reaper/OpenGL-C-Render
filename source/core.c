@@ -2,11 +2,11 @@
 
 int main(void) 
 {
-	GLFWwindow* window = initialiseGLFWWindow();
-	if (window == NULL) return 1;
+	render_engine_struct* re_struct = initialiseRenderEngine();
+	if (re_struct == NULL) return 1;
 
-	run(window);
-	
+	run(re_struct);
 	terminateWindow();
+	free(re_struct);
 	return 0;
 }

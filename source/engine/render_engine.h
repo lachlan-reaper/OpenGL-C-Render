@@ -27,8 +27,18 @@
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 768
 
-GLFWwindow* initialiseGLFWWindow();
-void run(GLFWwindow* window);
+typedef struct render_engine_struct {
+	GLFWwindow* window;
+	Camera camera;
+	GLuint programID;
+	
+	dyn_array vertices;
+	dyn_array uvs;
+	dyn_array normals;
+} render_engine_struct;
+
+render_engine_struct* initialiseRenderEngine();
+void run(render_engine_struct* re_struct);
 void terminateWindow();
 
 #endif

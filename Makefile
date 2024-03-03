@@ -26,8 +26,8 @@ COMP_FILES += $(MAIN_FILE)
 C_FLAGS += -DGLEW_STATIC
 C_FLAGS += -D_WIN64
 # Paths from .exe file:
-C_FLAGS += -DVERTEX_SHADER_PATH="\"./source/engine/shaders/VertexShader.vertexshader\""
-C_FLAGS += -DFRAGMENT_SHADER_PATH="\"./source/engine/shaders/FragmentShader.fragmentshader\""
+C_FLAGS += -DVERTEX_SHADER_PATH="\"./source/engine/shaders/StandardShading.vertexshader\""
+C_FLAGS += -DFRAGMENT_SHADER_PATH="\"./source/engine/shaders/StandardShading.fragmentshader\""
 
 .PHONY: build run
 .SILENT: build run

@@ -10,7 +10,7 @@
 static void error_callback(int e, const char *d)
 {printf("Error %d: %s\n", e, d);}
 
-GLFWwindow* initialiseGLFWWindow() 
+render_engine_struct* initialiseRenderEngine() 
 {
 	glfwSetErrorCallback(error_callback);
 	if (!glfwInit()) 
@@ -22,21 +22,21 @@ GLFWwindow* initialiseGLFWWindow()
 	glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // We want OpenGL 3.3
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // We don't want the old OpenGL 
 	#ifdef __APPLE__
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	#endif
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // We don't want the old OpenGL 
 
 	// Open a window and create its OpenGL context
-	GLFWwindow* window; // (In the accompanying source code, this variable is global for simplicity)
-	window = glfwCreateWindow( WINDOW_WIDTH, WINDOW_HEIGHT, "Renderer", NULL, NULL);
-	if( window == NULL )
+	render_engine_struct* re_struct = calloc(1, sizeof(render_engine_struct));
+	re_struct->window = glfwCreateWindow( WINDOW_WIDTH, WINDOW_HEIGHT, "Renderer", NULL, NULL);
+	if( re_struct->window == NULL )
 	{
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		glfwTerminate();
 		return NULL;
 	}
-	glfwMakeContextCurrent(window); // Initialize GLEW
+	glfwMakeContextCurrent(re_struct->window); // Initialize GLEW
 	glewExperimental = 1; // Needed in core profile
 	if (glewInit() != GLEW_OK) 
 	{
@@ -45,12 +45,13 @@ GLFWwindow* initialiseGLFWWindow()
 	}
 
 	// Ensure we can capture the escape key being pressed below
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+	glfwSetInputMode(re_struct->window, GLFW_STICKY_KEYS, GL_TRUE);
+	glfwSetInputMode(re_struct->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	return window;
+	return re_struct;
 }
 
-void run(GLFWwindow* window) 
+void run(render_engine_struct* re_struct) 
 {
 	// Dark blue background
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
@@ -68,35 +69,39 @@ void run(GLFWwindow* window)
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
+	re_struct->programID = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 
 	// Get a handle for our "MVP" uniform
-	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+	GLuint MatrixID = glGetUniformLocation(re_struct->programID, "MVP");
+	GLuint ViewMatrixID = glGetUniformLocation(re_struct->programID, "V");
+	GLuint ModelMatrixID = glGetUniformLocation(re_struct->programID, "M");
 
 	// Load the texture
 	GLuint Texture = loadDDS("./source/ext/textures/cubeuvmap.DDS");
 	
 	// Get a handle for our "myTextureSampler" uniform
-	GLuint TextureID  = glGetUniformLocation(programID, "myTextureSampler");
+	GLuint TextureID  = glGetUniformLocation(re_struct->programID, "myTextureSampler");
 
 	// Read our .obj file
-	static dyn_array vertices;
-	static dyn_array uvs;
-	static dyn_array normals; // Won't be used at the moment.
-	set_dyn_array(&vertices, DYN_ARRAY_VECTOR_3_TYPE);
-	set_dyn_array(&uvs, DYN_ARRAY_VECTOR_2_TYPE);
-	set_dyn_array(&normals, DYN_ARRAY_VECTOR_3_TYPE);
-	loadOBJ("./source/ext/objects/cube.obj", &vertices, &uvs, &normals); // TODO: REMOVE LITERAL
+	set_dyn_array(&re_struct->vertices, DYN_ARRAY_VECTOR_3_TYPE);
+	set_dyn_array(&re_struct->uvs, DYN_ARRAY_VECTOR_2_TYPE);
+	set_dyn_array(&re_struct->normals, DYN_ARRAY_VECTOR_3_TYPE);
+	loadOBJ("./source/ext/objects/suzanne.obj", &re_struct->vertices, &re_struct->uvs, &re_struct->normals); // TODO: REMOVE LITERAL
 
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, vertices.current_size * sizeof(vector3), &dyn_get_vec3(vertices.data, 0), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, re_struct->vertices.current_size * sizeof(vector3), &dyn_get_vec3(re_struct->vertices.data, 0), GL_STATIC_DRAW);
 
 	GLuint uvbuffer;
 	glGenBuffers(1, &uvbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-	glBufferData(GL_ARRAY_BUFFER, uvs.current_size * sizeof(vector2), &dyn_get_vec2(uvs.data, 0), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, re_struct->uvs.current_size * sizeof(vector2), &dyn_get_vec2(re_struct->uvs.data, 0), GL_STATIC_DRAW);
+
+	GLuint normalbuffer;
+	glGenBuffers(1, &normalbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+	glBufferData(GL_ARRAY_BUFFER, re_struct->normals.current_size * sizeof(vector3), &dyn_get_vec3(re_struct->normals.data, 0), GL_STATIC_DRAW);
 	
 	/* Colour
 	// One color for each vertex. They were generated randomly.
@@ -145,28 +150,37 @@ void run(GLFWwindow* window)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
 	*/
 
+	// Get a handle for our "LightPosition" uniform
+	glUseProgram(re_struct->programID);
+	GLuint LightID = glGetUniformLocation(re_struct->programID, "LightPosition_worldspace");
+
 	double current_time = glfwGetTime();
 	double last_time;
-	matrix_4x4 MVP;
-	Camera camera;
-	set_camera(&camera, deg_to_rad(24.0f), deg_to_rad(-24.0f), 45.0f);
-	set_camera_position(&camera, -3, 3, -7);
+	set_camera(&re_struct->camera, deg_to_rad(24.0f), deg_to_rad(-24.0f), 45.0f);
+	set_camera_position(&re_struct->camera, -3, 3, -7);
+
+	vector3 lightPos;
+	set_vec3(&lightPos, 4, 4, 4);
 
 	do {
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Use our shader
-		glUseProgram(programID);
+		glUseProgram(re_struct->programID);
 
 		last_time = current_time;
 		current_time = glfwGetTime();
-		process_camera_movement(window, &camera, (VECTOR_FLT)(current_time - last_time));
+		process_camera_movement(re_struct->window, &re_struct->camera, (VECTOR_FLT)(current_time - last_time));
 
 		// Send our transformation to the currently bound shader, 
 		// in the "MVP" uniform
-		calc_camera_mvp(&camera, &MVP);
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &get_4x4(MVP.arr, 0, 0));
+		calc_camera_mvp(&re_struct->camera);
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.MVP.arr, 0, 0));
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.model.arr, 0, 0));
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.view.arr, 0, 0));
+
+		glUniform3f(LightID, get_vec3(lightPos.arr, 0), get_vec3(lightPos.arr, 1), get_vec3(lightPos.arr, 2));
 
 		// Bind our texture in Texture Unit 0
 		glActiveTexture(GL_TEXTURE0);
@@ -186,7 +200,7 @@ void run(GLFWwindow* window)
 			(void*)0            // array buffer offset
 		);
 
-		// 2nd attribute buffer : UVs
+		// 2nd attribute buffer : uvs
 		glEnableVertexAttribArray(1);
 		glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
 		glVertexAttribPointer(
@@ -212,31 +226,44 @@ void run(GLFWwindow* window)
 		);
 		*/
 
+		// 3rd attribute buffer : normals
+		glEnableVertexAttribArray(2);
+		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+		glVertexAttribPointer(
+			2,                                // attribute
+			3,                                // size
+			GL_FLOAT,                         // type
+			GL_FALSE,                         // normalized?
+			0,                                // stride
+			(void*)0                          // array buffer offset
+		);
+
 		// Draw the triangle !
-		glDrawArrays(GL_TRIANGLES, 0, vertices.current_size); // 3 indices starting at 0 -> 1 triangle
+		glDrawArrays(GL_TRIANGLES, 0, re_struct->vertices.current_size); // 3 indices starting at 0 -> 1 triangle
 
 		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(2);
 
 		// Swap buffers
-		glfwSwapBuffers(window);
+		glfwSwapBuffers(re_struct->window);
 		glfwPollEvents();
 
 	} // Check if the ESC key was pressed or the window was closed
-	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-		glfwWindowShouldClose(window) == 0 );
+	while( glfwGetKey(re_struct->window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
+		glfwWindowShouldClose(re_struct->window) == 0 );
 	
 	// Cleanup VBO
 	glDeleteBuffers(1, &vertexbuffer);
 	glDeleteBuffers(1, &uvbuffer);
 	// glDeleteBuffers(1, &colorbuffer);
-	glDeleteProgram(programID);
+	glDeleteProgram(re_struct->programID);
 	glDeleteTextures(1, &Texture);
 	glDeleteVertexArrays(1, &VertexArrayID);
-	glDeleteProgram(programID);
 
-	clean_dyn_array(&vertices);
-	clean_dyn_array(&uvs);
-	clean_dyn_array(&normals);
+	clean_dyn_array(&re_struct->vertices);
+	clean_dyn_array(&re_struct->uvs);
+	clean_dyn_array(&re_struct->normals);
 }
 
 void terminateWindow()
