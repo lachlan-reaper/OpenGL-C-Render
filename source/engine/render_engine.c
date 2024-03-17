@@ -46,14 +46,27 @@ render_engine_struct* initialiseRenderEngine(const int window_width, const int w
 
 	re_struct->fragment_shader_path = NULL;
 	re_struct->vertex_shader_path = NULL;
+
+	set_vec4(&re_struct->default_bg, 0.0f, 0.0f, 0.0f, 0.0f);
+
 	re_struct->prime_function = NULL;
 	re_struct->process_function = NULL;
+	re_struct->clean_up_function = NULL;
+
+	re_struct->buffer_prime_function = NULL;
+	re_struct->buffer_draw_function = NULL;
+	re_struct->buffer_clean_up_function = NULL;
 
 	return re_struct;
 }
 
 int primeRenderEngine(render_engine_struct* re_struct)
 {
+	if (re_struct->buffer_prime_function == NULL)
+	{
+		printf("No buffer_prime_function provided\n");
+		return 1;
+	}
 	if (re_struct->fragment_shader_path == NULL)
 	{
 		printf("No fragment shader path provided\n");
@@ -65,8 +78,12 @@ int primeRenderEngine(render_engine_struct* re_struct)
 		return 1;
 	}
 
-	// Dark blue background
-	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+	glClearColor(
+		get_vec4(re_struct->default_bg.arr, 0), 
+		get_vec4(re_struct->default_bg.arr, 1), 
+		get_vec4(re_struct->default_bg.arr, 2), 
+		get_vec4(re_struct->default_bg.arr, 3)
+	);
 
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
@@ -76,12 +93,20 @@ int primeRenderEngine(render_engine_struct* re_struct)
 	// Cull triangles which normal is not towards the camera
 	glEnable(GL_CULL_FACE);
 
-	glGenVertexArrays(1, &re_struct->VertexArrayID);
-	glBindVertexArray(re_struct->VertexArrayID);
-
 	// Create and compile our GLSL program from the shaders
 	re_struct->programID = LoadShaders(re_struct->vertex_shader_path, re_struct->fragment_shader_path);
 
+	glGenVertexArrays(1, &re_struct->VertexArrayID);
+	glBindVertexArray(re_struct->VertexArrayID);
+	glUseProgram(re_struct->programID);
+
+	int res;
+	res = re_struct->buffer_prime_function(re_struct);
+	if (res != 0)
+	{
+		printf("Error on buffer prime function: %d\n", res);
+		return 2;
+	}
 	// Get a handle for our "MVP" uniform
 	re_struct->MatrixID = glGetUniformLocation(re_struct->programID, "MVP");
 	re_struct->ViewMatrixID = glGetUniformLocation(re_struct->programID, "V");
@@ -92,12 +117,6 @@ int primeRenderEngine(render_engine_struct* re_struct)
 	
 	// Get a handle for our "myTextureSampler" uniform
 	re_struct->TextureID  = glGetUniformLocation(re_struct->programID, "myTextureSampler");
-
-	// Read our .obj file
-	set_dyn_array(&re_struct->vertices, DYN_ARRAY_VECTOR_3_TYPE);
-	set_dyn_array(&re_struct->uvs, DYN_ARRAY_VECTOR_2_TYPE);
-	set_dyn_array(&re_struct->normals, DYN_ARRAY_VECTOR_3_TYPE);
-	loadOBJ("./source/ext/objects/suzanne.obj", &re_struct->vertices, &re_struct->uvs, &re_struct->normals); // TODO: REMOVE LITERAL
 
 	glGenBuffers(1, &re_struct->vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, re_struct->vertexbuffer);
@@ -158,28 +177,39 @@ int primeRenderEngine(render_engine_struct* re_struct)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
 	*/
 
+	// Read our .obj file
+	set_dyn_array(&re_struct->vertices, DYN_ARRAY_VECTOR_3_TYPE);
+	set_dyn_array(&re_struct->uvs, DYN_ARRAY_VECTOR_2_TYPE);
+	set_dyn_array(&re_struct->normals, DYN_ARRAY_VECTOR_3_TYPE);
+	loadOBJ("./source/ext/objects/suzanne.obj", &re_struct->vertices, &re_struct->uvs, &re_struct->normals); // TODO: REMOVE LITERAL
+
 	// Get a handle for our "LightPosition" uniform
-	glUseProgram(re_struct->programID);
 	re_struct->LightID = glGetUniformLocation(re_struct->programID, "LightPosition_worldspace");
 
 	set_camera(&re_struct->camera, deg_to_rad(24.0f), deg_to_rad(-24.0f), 45.0f);
 	set_camera_position(&re_struct->camera, -3, 3, -7);
 
 	set_vec3(&re_struct->lightPos, 4, 4, 4);
+
 	return 0;
 }
 
-void drawRenderEngine(render_engine_struct* re_struct)
+int drawRenderEngine(render_engine_struct* re_struct)
 {
-	// Send our transformation to the currently bound shader, 
-	// in the "MVP" uniform
-	calc_camera_mvp(&re_struct->camera, re_struct->window_width, re_struct->window_height);
-
 	// Clear the screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Use our shader
 	glUseProgram(re_struct->programID);
+
+	if (re_struct->buffer_draw_function == NULL)
+	{
+		printf("No provided buffer_draw_function\n");
+		return 1;
+	}
+
+	re_struct->buffer_draw_function(re_struct);
+	calc_camera_mvp(&re_struct->camera, re_struct->window_width, re_struct->window_height);
 
 	glUniformMatrix4fv(re_struct->MatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.MVP.arr, 0, 0));
 	glUniformMatrix4fv(re_struct->ModelMatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.model.arr, 0, 0));
@@ -253,24 +283,42 @@ void drawRenderEngine(render_engine_struct* re_struct)
 	// Swap buffers
 	glfwSwapBuffers(re_struct->window);
 	glfwPollEvents();
+
+	return 0;
 }
 
-void cleanupRenderEngine(render_engine_struct* re_struct)
+int cleanupRenderEngine(render_engine_struct* re_struct)
 {
-	// Cleanup VBO
-	glDeleteBuffers(1, &re_struct->vertexbuffer);
-	glDeleteBuffers(1, &re_struct->uvbuffer);
-	glDeleteBuffers(1, &re_struct->normalbuffer);
-	// glDeleteBuffers(1, &colorbuffer);
-	glDeleteProgram(re_struct->programID);
-	glDeleteTextures(1, &re_struct->Texture);
+	if (re_struct->clean_up_function != NULL)
+	{
+		int res;
+		res = re_struct->clean_up_function(re_struct);
+		if (res != 0)
+		{
+			printf("Error on clean up function: %d\n", res);
+			return 1;
+		}
+	}
+
+	if (re_struct->buffer_clean_up_function == NULL)
+	{
+		printf("No provided buffer clean up function\n");
+	}
+	else 
+	{
+		int res;
+		res = re_struct->buffer_clean_up_function(re_struct);
+		if (res != 0)
+		{
+			printf("Error on buffer clean up function: %d\n", res);
+			return 1;
+		}
+	}
+
 	glDeleteVertexArrays(1, &re_struct->VertexArrayID);
 
-	clean_dyn_array(&re_struct->vertices);
-	clean_dyn_array(&re_struct->uvs);
-	clean_dyn_array(&re_struct->normals);
-
 	glfwTerminate();
+	return 0;
 }
 
 int run(render_engine_struct* re_struct) 
@@ -297,7 +345,7 @@ int run(render_engine_struct* re_struct)
 	if (re_struct->process_function == NULL)
 	{
 		do {
-			drawRenderEngine(re_struct);
+			if (drawRenderEngine(re_struct)) break;
 		} // Check if the ESC key was pressed or the window was closed
 		while( glfwGetKey(re_struct->window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(re_struct->window) == 0 );
 	}
@@ -312,12 +360,10 @@ int run(render_engine_struct* re_struct)
 				cleanupRenderEngine(re_struct);
 				return 3;
 			}
-			drawRenderEngine(re_struct);
+			if (drawRenderEngine(re_struct)) break;
 		} // Check if the ESC key was pressed or the window was closed
 		while( glfwGetKey(re_struct->window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(re_struct->window) == 0 );
-
 	}
 	
-	cleanupRenderEngine(re_struct);
-	return 0;
+	return cleanupRenderEngine(re_struct);
 }

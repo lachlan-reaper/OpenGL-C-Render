@@ -18,8 +18,10 @@ COMP_FILES += $(ENG_PATH)/vectors/matrix_4x4.c
 COMP_FILES += $(ENG_PATH)/objects/camera.c 
 COMP_FILES += $(ENG_PATH)/objects/object_loader.c
 COMP_FILES += $(ENG_PATH)/render_engine.c 
+COMP_FILES += $(ENG_PATH)/default/basic_3d_functions.c
 
 COMP_FILES += $(EXT_PATH)/movement.c
+COMP_FILES += $(EXT_PATH)/default/basic_movement.c
 
 COMP_FILES += $(MAIN_FILE)
 

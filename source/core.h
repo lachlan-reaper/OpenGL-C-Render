@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "./engine/render_engine.h"
-#include "./ext/movement.h"
+#include "./engine/default/basic_3d_functions.h"
+#include "./ext/default/basic_movement.h"
 
 #endif

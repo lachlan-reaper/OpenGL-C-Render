@@ -37,6 +37,9 @@ struct render_engine_struct {
 
 	GLuint VertexArrayID;
 	GLuint programID;
+
+	vector4 default_bg; // RGBA
+
 	GLuint MatrixID;
 	GLuint ViewMatrixID;
 	GLuint ModelMatrixID;
@@ -57,6 +60,11 @@ struct render_engine_struct {
 
 	re_process_function prime_function; // return (0: success, !0: failure)
 	re_process_function process_function; // return (0: success, !0: failure)
+	re_process_function clean_up_function; // return (0: success, !0: failure)
+
+	re_process_function buffer_prime_function; // return (0: success, !0: failure)
+	re_process_function buffer_draw_function; // return (0: success, !0: failure)
+	re_process_function buffer_clean_up_function; // return (0: success, !0: failure)
 };
 
 render_engine_struct* initialiseRenderEngine(const int window_width, const int window_height);
