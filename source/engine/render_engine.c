@@ -118,6 +118,12 @@ int primeRenderEngine(render_engine_struct* re_struct)
 	// Get a handle for our "myTextureSampler" uniform
 	re_struct->TextureID  = glGetUniformLocation(re_struct->programID, "myTextureSampler");
 
+	// Read our .obj file
+	set_dyn_array(&re_struct->vertices, DYN_ARRAY_VECTOR_3_TYPE);
+	set_dyn_array(&re_struct->uvs, DYN_ARRAY_VECTOR_2_TYPE);
+	set_dyn_array(&re_struct->normals, DYN_ARRAY_VECTOR_3_TYPE);
+	loadOBJ("./source/ext/objects/suzanne.obj", &re_struct->vertices, &re_struct->uvs, &re_struct->normals); // TODO: REMOVE LITERAL
+
 	glGenBuffers(1, &re_struct->vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, re_struct->vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, re_struct->vertices.current_size * sizeof(vector3), &dyn_get_vec3(re_struct->vertices.data, 0), GL_STATIC_DRAW);
@@ -176,12 +182,6 @@ int primeRenderEngine(render_engine_struct* re_struct)
 	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
 	*/
-
-	// Read our .obj file
-	set_dyn_array(&re_struct->vertices, DYN_ARRAY_VECTOR_3_TYPE);
-	set_dyn_array(&re_struct->uvs, DYN_ARRAY_VECTOR_2_TYPE);
-	set_dyn_array(&re_struct->normals, DYN_ARRAY_VECTOR_3_TYPE);
-	loadOBJ("./source/ext/objects/suzanne.obj", &re_struct->vertices, &re_struct->uvs, &re_struct->normals); // TODO: REMOVE LITERAL
 
 	// Get a handle for our "LightPosition" uniform
 	re_struct->LightID = glGetUniformLocation(re_struct->programID, "LightPosition_worldspace");
