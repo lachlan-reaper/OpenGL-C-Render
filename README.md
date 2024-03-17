@@ -6,14 +6,24 @@ While currently platform-dependent, the aim is to restructure later to become pl
 
 Orignially based on the [OpenGL tutorial for beginners](http://www.opengl-tutorial.org/beginners-tutorials) and [OpenGL tutorial for intermediates](http://www.opengl-tutorial.org/intermediate-tutorials/), later repurposed for private use.
 
-[libs](./libs) folder to be replaced for platform-agnosticism.
+[libs](./libs) folder to be replaced for platform-agnosticism. <br>
+[engine](./source/engine/) folder contains all of the code that is required for the render engine. <br>
+[render_engine.h](./source/engine/render_engine.h) contains the interface for using the render engine. <br>
+[ext](./source/ext/) folder contains all of the code that can be used for basic/common goals (i.e. movement) as well as all objects and textures to be used for the render engine. <br>
+[core.c](./source/core.c) contains the instantiation and constants for use during runtime. <br>
 
-Can be built (with a main func) using
+See documentation [here](.)
+
+## Build and Execution
+
+[core.c](./source/core.c) can be built (with the main func) using
 ```bash
 make build
 ```
+The build time error log file will be built [here](./build_error.log) at ./build_error.log
 
-Can be run (with the main func) using
+
+[core.c](./source/core.c) can be run (with the main func) using
 ``` bash
 make run
 ```
