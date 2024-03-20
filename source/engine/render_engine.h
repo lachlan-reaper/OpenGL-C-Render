@@ -17,28 +17,19 @@ typedef struct render_engine_struct render_engine_struct;
 #include "./vectors/vector3.h"
 #include "./vectors/vector4.h"
 #include "./vectors/matrix_4x4.h"
-#include "./vectors/dyn_array.h"
 
-#include "./shaders/shader.h"
-#include "./textures/texture_loader.h"
+#include "./util/dyn_array.h"
+#include "./util/shader_loader.h"
+#include "./util/texture_loader.h"
+
 #include "./objects/camera.h"
-#include "./objects/object_loader.h"
+#include "./objects/model.h"
 
 typedef int (*re_process_function)(render_engine_struct*);
 
-struct render_engine_struct {
-	GLFWwindow* window;
-	Camera camera;
-
-	int window_width;
-	int window_height;
-	char* vertex_shader_path;
-	char* fragment_shader_path;
-
+struct render_engine_IDs {
 	GLuint VertexArrayID;
 	GLuint programID;
-
-	vector4 default_bg; // RGBA
 
 	GLuint MatrixID;
 	GLuint ViewMatrixID;
@@ -51,11 +42,22 @@ struct render_engine_struct {
 	GLuint vertexbuffer;
 	GLuint uvbuffer;
 	GLuint normalbuffer;
+	GLuint indexbuffer;
+};
 
-	dyn_array vertices;
-	dyn_array uvs;
-	dyn_array normals;
+struct render_engine_struct {
+	GLFWwindow* window;
+	Camera camera;
 
+	int window_width;
+	int window_height;
+	char* vertex_shader_path;
+	char* fragment_shader_path;
+
+	struct render_engine_IDs ids;
+	Model model;
+
+	vector4 default_bg; // RGBA
 	vector3 lightPos;
 
 	re_process_function prime_function; // return (0: success, !0: failure)

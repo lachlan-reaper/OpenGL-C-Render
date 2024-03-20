@@ -8,15 +8,18 @@ SRC_PATH := ./source
 MAIN_FILE := $(SRC_PATH)/core.c
 ENG_PATH := $(SRC_PATH)/engine
 EXT_PATH := $(SRC_PATH)/ext
-COMP_FILES := $(ENG_PATH)/shaders/shader.c 
-COMP_FILES += $(ENG_PATH)/textures/texture_loader.c
-COMP_FILES += $(ENG_PATH)/vectors/vector2.c 
+
+COMP_FILES += $(ENG_PATH)/vectors/vector2.c
 COMP_FILES += $(ENG_PATH)/vectors/vector3.c 
 COMP_FILES += $(ENG_PATH)/vectors/vector4.c 
 COMP_FILES += $(ENG_PATH)/vectors/matrix_4x4.c 
-# COMP_FILES += $(ENG_PATH)/vectors/dyn_array.c 	TBU: WHEN CODE IS ADDED
+COMP_FILES += $(ENG_PATH)/util/dyn_array.c
+COMP_FILES += $(ENG_PATH)/util/object_loader.c
+COMP_FILES += $(ENG_PATH)/util/shader_loader.c 
+COMP_FILES += $(ENG_PATH)/util/texture_loader.c
+COMP_FILES += $(ENG_PATH)/util/vbo_indexer.c
 COMP_FILES += $(ENG_PATH)/objects/camera.c 
-COMP_FILES += $(ENG_PATH)/objects/object_loader.c
+COMP_FILES += $(ENG_PATH)/objects/model.c 
 COMP_FILES += $(ENG_PATH)/render_engine.c 
 COMP_FILES += $(ENG_PATH)/default/basic_3d_functions.c
 

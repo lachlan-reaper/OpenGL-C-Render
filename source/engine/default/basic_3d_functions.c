@@ -15,16 +15,14 @@ int buffer_draw_function(render_engine_struct* re_struct)
 int buffer_clean_up_function(render_engine_struct* re_struct)
 {
 	// Cleanup VBO
-	glDeleteBuffers(1, &re_struct->vertexbuffer);
-	glDeleteBuffers(1, &re_struct->uvbuffer);
-	glDeleteBuffers(1, &re_struct->normalbuffer);
-	// glDeleteBuffers(1, &colorbuffer);
-	glDeleteProgram(re_struct->programID);
-	glDeleteTextures(1, &re_struct->Texture);
+	glDeleteBuffers(1, &re_struct->ids.vertexbuffer);
+	glDeleteBuffers(1, &re_struct->ids.uvbuffer);
+	glDeleteBuffers(1, &re_struct->ids.normalbuffer);
+	glDeleteBuffers(1, &re_struct->ids.indexbuffer);
+	glDeleteProgram(re_struct->ids.programID);
+	glDeleteTextures(1, &re_struct->ids.Texture);
 
-	clean_dyn_array(&re_struct->vertices);
-	clean_dyn_array(&re_struct->uvs);
-	clean_dyn_array(&re_struct->normals);
+	clean_model(&re_struct->model);
 	return 0;
 }
 

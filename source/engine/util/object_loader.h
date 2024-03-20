@@ -6,7 +6,7 @@
 #include "../vectors/vector_standards.h"
 #include "../vectors/vector2.h"
 #include "../vectors/vector3.h"
-#include "../vectors/dyn_array.h"
+#include "./dyn_array.h"
 
 int loadOBJ(
 	const char * path, 

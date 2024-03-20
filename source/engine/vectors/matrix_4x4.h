@@ -1,9 +1,9 @@
 #ifndef MATRIX_4x4_H
 #define MATRIX_4x4_H
 
-#include "vector_standards.h"
-#include "vector3.h"
-#include "vector4.h"
+#include "./vector_standards.h"
+#include "./vector3.h"
+#include "./vector4.h"
 
 typedef struct matrix_4x4
 {
