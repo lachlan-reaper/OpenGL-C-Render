@@ -62,17 +62,19 @@ void set_rotate_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTO
 	VECTOR_FLT E = cos(delta_z);
 	VECTOR_FLT F = sin(delta_z);
 
-	VECTOR_FLT AD = A*D;
-	VECTOR_FLT BD = B*D;
+	VECTOR_FLT AE = A*E;
+	VECTOR_FLT AF = A*F;
+	VECTOR_FLT BE = B*E;
+	VECTOR_FLT BF = B*F;
 
 	get_4x4(matrix->arr, 0, 0) = C*E;
-	get_4x4(matrix->arr, 0, 1) = BD*E + A*F;
-	get_4x4(matrix->arr, 0, 2) = B*F - AD*E;
+	get_4x4(matrix->arr, 0, 1) = BE*D + AF;
+	get_4x4(matrix->arr, 0, 2) = BF - AE*D;
 	get_4x4(matrix->arr, 0, 3) = 0;
 
 	get_4x4(matrix->arr, 1, 0) = -C*F;
-	get_4x4(matrix->arr, 1, 1) = A*E - BD*F;
-	get_4x4(matrix->arr, 1, 2) = AD*F + B*E;
+	get_4x4(matrix->arr, 1, 1) = AE - BF*D;
+	get_4x4(matrix->arr, 1, 2) = AF*D + BE;
 	get_4x4(matrix->arr, 1, 3) = 0;
 
 	get_4x4(matrix->arr, 2, 0) = D;

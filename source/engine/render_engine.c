@@ -7,7 +7,7 @@ render_engine_struct* initialiseRenderEngine(const int window_width, const int w
 {
 	{ // OpenGL Env. Initialisation
 		glfwSetErrorCallback(error_callback);
-		if (!glfwInit()) 
+		if (glfwInit() != GL_TRUE)
 		{
 			fprintf(stdout, "[GFLW] failed to init!\n");
 			exit(1);
@@ -42,11 +42,11 @@ render_engine_struct* initialiseRenderEngine(const int window_width, const int w
 			fprintf(stderr, "Failed to initialize GLEW\n");
 			return NULL;
 		}
-	}
 
-	// Ensure we can capture the escape key being pressed below
-	glfwSetInputMode(re_struct->window, GLFW_STICKY_KEYS, GL_TRUE);
-	glfwSetInputMode(re_struct->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		// Ensure we can capture the escape key being pressed below
+		glfwSetInputMode(re_struct->window, GLFW_STICKY_KEYS, GL_TRUE);
+		glfwSetInputMode(re_struct->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
 
 	{ // re_struct defaults
 		re_struct->fragment_shader_path = NULL;
@@ -61,12 +61,15 @@ render_engine_struct* initialiseRenderEngine(const int window_width, const int w
 		re_struct->buffer_prime_function = NULL;
 		re_struct->buffer_draw_function = NULL;
 		re_struct->buffer_clean_up_function = NULL;
+
+		set_dyn_array(&re_struct->models, DYN_ARRAY_NO_TYPE);
+		override_item_size_dyn_array(&re_struct->models, sizeof(Model));
 	}
 
 	return re_struct;
 }
 
-int primeRenderEngine(render_engine_struct* re_struct)
+int primeRenderEngine(render_engine_struct* const re_struct)
 {
 	if (re_struct->buffer_prime_function == NULL)
 	{
@@ -84,7 +87,7 @@ int primeRenderEngine(render_engine_struct* re_struct)
 		return 1;
 	}
 
-	{ // OpenGL default settings
+	{ // OpenGL default settings		
 		glClearColor(
 			get_vec4(re_struct->default_bg.arr, 0), 
 			get_vec4(re_struct->default_bg.arr, 1), 
@@ -131,27 +134,26 @@ int primeRenderEngine(render_engine_struct* re_struct)
 		re_struct->ids.TextureID  = glGetUniformLocation(re_struct->ids.programID, "myTextureSampler");
 	}
 
-	loadObjectToModel(&(re_struct->model), "./source/ext/objects/suzanne.obj");
-
 	{ // Binding buffers
+		Model* const model = dyn_get_void_ptr(&re_struct->models, 0);
 		glGenBuffers(1, &re_struct->ids.vertexbuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, re_struct->ids.vertexbuffer);
-		glBufferData(GL_ARRAY_BUFFER, re_struct->model.indexed_vertices.current_size * sizeof(vector3), &dyn_get_vec3(re_struct->model.indexed_vertices.data, 0), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, model->indexed_vertices.current_size * sizeof(vector3), &dyn_get_vec3(model->indexed_vertices.data, 0), GL_STATIC_DRAW);
 
 		glGenBuffers(1, &re_struct->ids.uvbuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, re_struct->ids.uvbuffer);
-		glBufferData(GL_ARRAY_BUFFER, re_struct->model.indexed_uvs.current_size * sizeof(vector2), &dyn_get_vec2(re_struct->model.indexed_uvs.data, 0), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, model->indexed_uvs.current_size * sizeof(vector2), &dyn_get_vec2(model->indexed_uvs.data, 0), GL_STATIC_DRAW);
 
 		glGenBuffers(1, &re_struct->ids.normalbuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, re_struct->ids.normalbuffer);
-		glBufferData(GL_ARRAY_BUFFER, re_struct->model.indexed_normals.current_size * sizeof(vector3), &dyn_get_vec3(re_struct->model.indexed_normals.data, 0), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, model->indexed_normals.current_size * sizeof(vector3), &dyn_get_vec3(model->indexed_normals.data, 0), GL_STATIC_DRAW);
 
 		glGenBuffers(1, &re_struct->ids.indexbuffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, re_struct->ids.indexbuffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, re_struct->model.indexes.current_size * sizeof(unsigned int), &dyn_get_uint(re_struct->model.indexes.data, 0), GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, model->indexes.current_size * sizeof(unsigned int), &dyn_get_uint(model->indexes.data, 0), GL_STATIC_DRAW);
 	}
 
-	{ // Camera + lights
+	{ // Camera and lights initialisation
 		// Get a handle for our "LightPosition" uniform
 		re_struct->ids.LightID = glGetUniformLocation(re_struct->ids.programID, "LightPosition_worldspace");
 
@@ -164,7 +166,7 @@ int primeRenderEngine(render_engine_struct* re_struct)
 	return 0;
 }
 
-int drawRenderEngine(render_engine_struct* re_struct)
+int drawRenderEngine(render_engine_struct* const re_struct)
 {
 	// Clear the screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -230,9 +232,14 @@ int drawRenderEngine(render_engine_struct* re_struct)
 	);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, re_struct->ids.indexbuffer);
-
-	// Draw the triangle !
-	glDrawElements(GL_TRIANGLES, re_struct->model.indexes.current_size, GL_UNSIGNED_INT, (void*)0); // 3 indices starting at 0 -> 1 triangle
+	
+	// Draw the triangles !
+	glDrawElements(
+		GL_TRIANGLES, 
+		((Model*)dyn_get_void_ptr(&re_struct->models, 0))->indexes.current_size, 
+		GL_UNSIGNED_INT, 
+		(void*)0
+	);
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
@@ -245,7 +252,24 @@ int drawRenderEngine(render_engine_struct* re_struct)
 	return 0;
 }
 
-int cleanupRenderEngine(render_engine_struct* re_struct)
+MODEL_ID_TYPE addModel(render_engine_struct* const re_struct, const char* path)
+{
+	Model* const model = add_slot_dyn_array(&(re_struct->models));
+	initialiseModel(model);
+	loadObjectToModel(model, path);
+	return re_struct->models.current_size - 1;
+}
+
+// TODO: TBU
+MODEL_INST_ID_TYPE add_instance_of_model(render_engine_struct* const re_struct, const MODEL_ID_TYPE model_id)
+{
+	const vector3 coords = {{0, 0, 0}};
+	const vector3 scale = {{1, 1, 1}};
+	const vector3 rotation = {{0, 0, 0}};
+	return addModelInstance(dyn_get_void_ptr(&re_struct->models, model_id), coords, scale, rotation);
+}
+
+int cleanupRenderEngine(render_engine_struct* const re_struct)
 {
 	if (re_struct->clean_up_function != NULL)
 	{
@@ -300,6 +324,10 @@ int run(render_engine_struct* re_struct)
 		}
 	}
 
+	// For speed computation
+	double lastTime = glfwGetTime();
+	int nbFrames = 0;
+
 	if (re_struct->process_function == NULL)
 	{
 		do {
@@ -311,6 +339,17 @@ int run(render_engine_struct* re_struct)
 	{
 		int res;
 		do {
+			{ // FPS Counter
+				// Measure speed
+				double currentTime = glfwGetTime();
+				nbFrames++;
+				if ( currentTime - lastTime >= 1.0 ){ // If last prinf() was more than 1sec ago
+					// printf and reset
+					printf("%f ms/frame\n", 1000.0/((double)nbFrames));
+					nbFrames = 0;
+					lastTime += 1.0;
+				}
+			}
 			res = re_struct->process_function(re_struct);
 			if (res != 0)
 			{

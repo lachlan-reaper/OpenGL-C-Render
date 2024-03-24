@@ -22,7 +22,8 @@ int buffer_clean_up_function(render_engine_struct* re_struct)
 	glDeleteProgram(re_struct->ids.programID);
 	glDeleteTextures(1, &re_struct->ids.Texture);
 
-	clean_model(&re_struct->model);
+	for (int i = re_struct->models.current_size - 1; i>=0; i--) clean_model(dyn_get_void_ptr(&re_struct->models, i));
+
 	return 0;
 }
 
