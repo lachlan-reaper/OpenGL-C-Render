@@ -18,7 +18,6 @@ int buffer_clean_up_function(render_engine_struct* re_struct)
 
 void set_all_basic_3d_funtions(render_engine_struct* re_struct)
 {
-	// Set up standard info
 	re_struct->fragment_shader_path = "./source/engine/shaders/StandardShading.fragmentshader";
 	re_struct->vertex_shader_path = "./source/engine/shaders/StandardShading.vertexshader";
 

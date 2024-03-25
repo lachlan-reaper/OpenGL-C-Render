@@ -80,11 +80,10 @@ void loadTextureToModel(Model* model, const char* path)
 }
 
 /*
-	Returns instance id or -1 if too many instances for the model exist.
+	Returns instance id.
 */
 MODEL_INST_ID_TYPE addModelInstance(Model* const model, const vector3 coords, const vector3 scale, const vector3 rotation)
 {
-	if (model->instances.current_size == MAX_INSTANCES) return -1;
 	add_slot_dyn_array(&model->instances);
 	add_slot_dyn_array(&model->instances_model_matrix);
 	((struct model_matrix*) dyn_get_last_void_ptr(&model->instances))->xyz_coords = coords;

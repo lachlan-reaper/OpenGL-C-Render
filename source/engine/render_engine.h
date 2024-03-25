@@ -1,14 +1,11 @@
 #ifndef RENDER_ENGINE_H
 #define RENDER_ENGINE_H
 
-// Include standard headers
 #include <stdio.h>
 #include <stdlib.h>
 
 // Include GLEW. Always include it before gl.h and glfw3.h, since it's a bit magic.
 #include <GL/glew.h>
-
-// Include GLFW
 #include <GLFW/glfw3.h>
 
 typedef struct render_engine_struct render_engine_struct;
@@ -26,6 +23,10 @@ typedef struct render_engine_struct render_engine_struct;
 #include "./objects/model.h"
 
 #define MODEL_ID_TYPE unsigned int
+
+#ifndef MAX_INSTANCES_BATCH
+	#define MAX_INSTANCES_BATCH 200
+#endif
 
 typedef int (*re_process_function)(render_engine_struct*);
 

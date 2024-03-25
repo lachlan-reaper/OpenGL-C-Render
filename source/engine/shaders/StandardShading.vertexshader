@@ -1,5 +1,5 @@
 #version 330 core
-#define MAX_INSTANCES 100 // Is also defined in model.h
+#define MAX_INSTANCES 200 // Is the max per batch
 
 // Input vertex data, different for all executions of this shader.
 layout(location = 0) in vec3 vertexPosition_modelspace;

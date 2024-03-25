@@ -12,7 +12,6 @@
 #include "../util/texture_loader.h"
 #include "../util/vbo_indexer.h"
 
-#define MAX_INSTANCES 100 // Is also defined in the vertex shader
 #define MODEL_INST_ID_TYPE unsigned int
 
 struct model_matrix {

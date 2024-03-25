@@ -16,25 +16,19 @@ int main(void)
 	vector3 scale = {{1, 1, 1}};
 	vector3 rotation = {{0, 0, 0}};
 
-	add_instance_of_model(re_struct, model_id, coords, scale, rotation);
-	get_vec3(coords.arr, 1) = 5;
-	add_instance_of_model(re_struct, model_id, coords, scale, rotation);
-	get_vec3(coords.arr, 1) = -5;
-	add_instance_of_model(re_struct, model_id, coords, scale, rotation);
-	get_vec3(coords.arr, 0) = 5;
-	get_vec3(coords.arr, 1) = 5;
-	add_instance_of_model(re_struct, model_id, coords, scale, rotation);
-	get_vec3(coords.arr, 1) = 0;
-	add_instance_of_model(re_struct, model_id, coords, scale, rotation);
-	get_vec3(coords.arr, 1) = -5;
-	add_instance_of_model(re_struct, model_id, coords, scale, rotation);
-	get_vec3(coords.arr, 0) = -5;
-	get_vec3(coords.arr, 1) = 5;
-	add_instance_of_model(re_struct, model_id, coords, scale, rotation);
-	get_vec3(coords.arr, 1) = 0;
-	add_instance_of_model(re_struct, model_id, coords, scale, rotation);
-	get_vec3(coords.arr, 1) = -5;
-	add_instance_of_model(re_struct, model_id, coords, scale, rotation);
+
+	const int space = 3;
+	const int num_base = 7;
+	const int num_sq = num_base * num_base;
+	const int num_cu = num_base * num_sq;
+
+	for (int i = 0; i < num_cu; i++)
+	{
+		get_vec3(coords.arr, 0) = space*(i % num_base);
+		get_vec3(coords.arr, 1) = space*((i / num_base) % num_base);
+		get_vec3(coords.arr, 2) = space*(i / num_sq);
+		add_instance_of_model(re_struct, model_id, coords, scale, rotation);
+	}
 	
 	if (run(re_struct))
 	{

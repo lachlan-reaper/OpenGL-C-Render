@@ -6,6 +6,9 @@
 
 #include <GL/gl.h>
 
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+
 #define get_vec2(VEC2_ARR, ROW) VEC2_ARR[ROW]
 #define get_vec3(VEC3_ARR, ROW) VEC3_ARR[ROW]
 #define get_vec4(VEC4_ARR, ROW) VEC4_ARR[ROW]

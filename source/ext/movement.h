@@ -4,7 +4,6 @@
 #include "../engine/render_engine.h"
 #include "../engine/objects/camera.h"
 
-// Include GLFW
 #include <GLFW/glfw3.h>
 
 #define FORWARD_SPEED 3

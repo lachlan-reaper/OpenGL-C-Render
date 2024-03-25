@@ -1,6 +1,8 @@
 #ifndef BASIC_3D_FUNCTIONS_H
 #define BASIC_3D_FUNCTIONS_H
 
+#define MAX_INSTANCES_BATCH 200
+
 #include "..\render_engine.h"
 #include "..\objects\camera.h"
 
