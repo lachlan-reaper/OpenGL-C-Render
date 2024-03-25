@@ -111,6 +111,9 @@ int primeRenderEngine(render_engine_struct* const re_struct)
 		glGenVertexArrays(1, &re_struct->ids.VertexArrayID);
 		glBindVertexArray(re_struct->ids.VertexArrayID);
 		glUseProgram(re_struct->ids.programID);
+
+		// Get a handle for our "myTextureSampler" uniform
+		re_struct->ids.textureHandle = glGetUniformLocation(re_struct->ids.programID, "myTextureSampler");
 	}
 
 	int res;
@@ -125,33 +128,6 @@ int primeRenderEngine(render_engine_struct* const re_struct)
 	re_struct->ids.MatrixID = glGetUniformLocation(re_struct->ids.programID, "MVP");
 	re_struct->ids.ViewMatrixID = glGetUniformLocation(re_struct->ids.programID, "V");
 	re_struct->ids.ModelMatrixID = glGetUniformLocation(re_struct->ids.programID, "M");
-
-	{ // Texture handling
-		// Load the texture
-		re_struct->ids.Texture = loadDDS("./source/ext/textures/cubeuvmap.DDS"); // TODO: REMOVE LITERAL
-		
-		// Get a handle for our "myTextureSampler" uniform
-		re_struct->ids.TextureID  = glGetUniformLocation(re_struct->ids.programID, "myTextureSampler");
-	}
-
-	{ // Binding buffers
-		Model* const model = dyn_get_void_ptr(&re_struct->models, 0);
-		glGenBuffers(1, &re_struct->ids.vertexbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, re_struct->ids.vertexbuffer);
-		glBufferData(GL_ARRAY_BUFFER, model->indexed_vertices.current_size * sizeof(vector3), &dyn_get_vec3(model->indexed_vertices.data, 0), GL_STATIC_DRAW);
-
-		glGenBuffers(1, &re_struct->ids.uvbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, re_struct->ids.uvbuffer);
-		glBufferData(GL_ARRAY_BUFFER, model->indexed_uvs.current_size * sizeof(vector2), &dyn_get_vec2(model->indexed_uvs.data, 0), GL_STATIC_DRAW);
-
-		glGenBuffers(1, &re_struct->ids.normalbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, re_struct->ids.normalbuffer);
-		glBufferData(GL_ARRAY_BUFFER, model->indexed_normals.current_size * sizeof(vector3), &dyn_get_vec3(model->indexed_normals.data, 0), GL_STATIC_DRAW);
-
-		glGenBuffers(1, &re_struct->ids.indexbuffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, re_struct->ids.indexbuffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, model->indexes.current_size * sizeof(unsigned int), &dyn_get_uint(model->indexes.data, 0), GL_STATIC_DRAW);
-	}
 
 	{ // Camera and lights initialisation
 		// Get a handle for our "LightPosition" uniform
@@ -189,57 +165,59 @@ int drawRenderEngine(render_engine_struct* const re_struct)
 
 	glUniform3f(re_struct->ids.LightID, get_vec3(re_struct->lightPos.arr, 0), get_vec3(re_struct->lightPos.arr, 1), get_vec3(re_struct->lightPos.arr, 2));
 
-	// Bind our texture in Texture Unit 0
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, re_struct->ids.Texture);
-	// Set our "myTextureSampler" sampler to use Texture Unit 0
-	glUniform1i(re_struct->ids.TextureID, 0);
-
-	// 1st attribute buffer : vertices
 	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, re_struct->ids.vertexbuffer);
-	glVertexAttribPointer(
-		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-		3,                  // size
-		GL_FLOAT,           // type
-		GL_FALSE,           // normalized?
-		0,                  // stride
-		(void*)0            // array buffer offset
-	);
-
-	// 2nd attribute buffer : uvs
 	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, re_struct->ids.uvbuffer);
-	glVertexAttribPointer(
-		1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
-		2,                                // size : U+V => 2
-		GL_FLOAT,                         // type
-		GL_FALSE,                         // normalized?
-		0,                                // stride
-		(void*)0                          // array buffer offset
-	);
-
-	// 3rd attribute buffer : normals
 	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, re_struct->ids.normalbuffer);
-	glVertexAttribPointer(
-		2,                                // attribute
-		3,                                // size
-		GL_FLOAT,                         // type
-		GL_FALSE,                         // normalized?
-		0,                                // stride
-		(void*)0                          // array buffer offset
-	);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, re_struct->ids.indexbuffer);
 	
-	// Draw the triangles !
-	glDrawElements(
-		GL_TRIANGLES, 
-		((Model*)dyn_get_void_ptr(&re_struct->models, 0))->indexes.current_size, 
-		GL_UNSIGNED_INT, 
-		(void*)0
-	);
+	for (int i = 0; i < re_struct->models.current_size; i++)
+	{
+		Model* const model = ((Model*)dyn_get_void_ptr(&re_struct->models, i));
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, model->Texture);
+		glUniform1i(re_struct->ids.textureHandle, 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, model->vertexbufferID);
+		glVertexAttribPointer(
+			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+			3,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+		);
+
+		glBindBuffer(GL_ARRAY_BUFFER, model->uvbufferID);
+		glVertexAttribPointer(
+			1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+			2,                                // size : U+V => 2
+			GL_FLOAT,                         // type
+			GL_FALSE,                         // normalized?
+			0,                                // stride
+			(void*)0                          // array buffer offset
+		);
+
+		glBindBuffer(GL_ARRAY_BUFFER, model->normalbufferID);
+		glVertexAttribPointer(
+			2,                                // attribute
+			3,                                // size
+			GL_FLOAT,                         // type
+			GL_FALSE,                         // normalized?
+			0,                                // stride
+			(void*)0                          // array buffer offset
+		);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->indexbufferID);
+
+		// Draw the triangles !
+		glDrawElementsInstanced(
+			GL_TRIANGLES, 
+			model->indexes.current_size, 
+			GL_UNSIGNED_INT, 
+			(void*)0,
+			model->instances.current_size
+		);
+	}
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
@@ -252,11 +230,31 @@ int drawRenderEngine(render_engine_struct* const re_struct)
 	return 0;
 }
 
-MODEL_ID_TYPE addModel(render_engine_struct* const re_struct, const char* path)
+MODEL_ID_TYPE addModel(render_engine_struct* const re_struct, const char* obj_path, const char* texture_path)
 {
 	Model* const model = add_slot_dyn_array(&(re_struct->models));
 	initialiseModel(model);
-	loadObjectToModel(model, path);
+	loadObjectToModel(model, obj_path);
+	loadTextureToModel(model, texture_path);
+
+	{ // Generate VBO buffers
+		glGenBuffers(1, &model->vertexbufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, model->vertexbufferID);
+		glBufferData(GL_ARRAY_BUFFER, model->indexed_vertices.current_size * sizeof(vector3), &dyn_get_vec3(model->indexed_vertices.data, 0), GL_STATIC_DRAW);
+
+		glGenBuffers(1, &model->uvbufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, model->uvbufferID);
+		glBufferData(GL_ARRAY_BUFFER, model->indexed_uvs.current_size * sizeof(vector2), &dyn_get_vec2(model->indexed_uvs.data, 0), GL_STATIC_DRAW);
+
+		glGenBuffers(1, &model->normalbufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, model->normalbufferID);
+		glBufferData(GL_ARRAY_BUFFER, model->indexed_normals.current_size * sizeof(vector3), &dyn_get_vec3(model->indexed_normals.data, 0), GL_STATIC_DRAW);
+
+		glGenBuffers(1, &model->indexbufferID);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->indexbufferID);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, model->indexes.current_size * sizeof(unsigned int), &dyn_get_uint(model->indexes.data, 0), GL_STATIC_DRAW);
+	}
+
 	return re_struct->models.current_size - 1;
 }
 
@@ -297,7 +295,14 @@ int cleanupRenderEngine(render_engine_struct* const re_struct)
 		}
 	}
 
+	for (int i = 0; i < re_struct->models.current_size; i++) clean_model(dyn_get_void_ptr(&re_struct->models, i));
+
+	clean_dyn_array(&re_struct->models);
+
 	glDeleteVertexArrays(1, &re_struct->ids.VertexArrayID);
+
+	// Cleanup VBO
+	glDeleteProgram(re_struct->ids.programID);
 
 	glfwTerminate();
 	return 0;

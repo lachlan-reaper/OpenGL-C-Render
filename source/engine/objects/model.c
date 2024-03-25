@@ -75,6 +75,11 @@ void loadObjectToModel(Model* model, const char* path)
 	indexVBO(&vertices, &uvs, &normals, &model->indexes, &model->indexed_vertices, &model->indexed_uvs, &model->indexed_normals);
 }
 
+void loadTextureToModel(Model* model, const char* path)
+{
+	model->Texture = loadDDS(path);
+}
+
 /*
 	Returns instance id.
 */
@@ -99,4 +104,12 @@ void clean_model(Model* model)
 	clean_dyn_array(&model->indexed_normals);
 	clean_dyn_array(&model->indexes);
 	clean_dyn_array(&model->instances);
+
+	
+	glDeleteBuffers(1, &model->vertexbufferID);
+	glDeleteBuffers(1, &model->uvbufferID);
+	glDeleteBuffers(1, &model->normalbufferID);
+	glDeleteBuffers(1, &model->indexbufferID);
+
+	glDeleteTextures(1, &model->Texture);
 }
