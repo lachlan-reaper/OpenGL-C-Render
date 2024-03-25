@@ -199,4 +199,13 @@ static inline matrix_4x4* copy_to_mat4x4(const matrix_4x4* base, matrix_4x4* cop
 	return copy;
 }
 
+#include <stdio.h>
+static inline void dump_mat4x4(const matrix_4x4* const matrix)
+{
+	printf("%lf, %lf, %lf, %lf\n", get_4x4(matrix->arr, 0, 0), get_4x4(matrix->arr, 1, 0), get_4x4(matrix->arr, 2, 0), get_4x4(matrix->arr, 3, 0));
+	printf("%lf, %lf, %lf, %lf\n", get_4x4(matrix->arr, 0, 1), get_4x4(matrix->arr, 1, 1), get_4x4(matrix->arr, 2, 1), get_4x4(matrix->arr, 3, 1));
+	printf("%lf, %lf, %lf, %lf\n", get_4x4(matrix->arr, 0, 2), get_4x4(matrix->arr, 1, 2), get_4x4(matrix->arr, 2, 2), get_4x4(matrix->arr, 3, 2));
+	printf("%lf, %lf, %lf, %lf\n", get_4x4(matrix->arr, 0, 3), get_4x4(matrix->arr, 1, 3), get_4x4(matrix->arr, 2, 3), get_4x4(matrix->arr, 3, 3));
+}
+
 #endif

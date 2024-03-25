@@ -12,6 +12,7 @@
 #include "../util/texture_loader.h"
 #include "../util/vbo_indexer.h"
 
+#define MAX_INSTANCES 100 // Is also defined in the vertex shader
 #define MODEL_INST_ID_TYPE unsigned int
 
 struct model_matrix {
@@ -28,6 +29,7 @@ typedef struct Model {
 	dyn_array indexes;
 
 	dyn_array instances; // type: struct model_matrix
+	dyn_array instances_model_matrix; // type: matrix_4x4
 
 	GLuint vertexbufferID;
 	GLuint uvbufferID;

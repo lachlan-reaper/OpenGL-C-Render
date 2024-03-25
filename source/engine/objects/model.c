@@ -3,36 +3,34 @@
 static void recalc_instance_out_matrix(Model* const model, const MODEL_INST_ID_TYPE instance_id)
 {
 	struct model_matrix* const model_mat = (struct model_matrix*) dyn_get_void_ptr(&model->instances, instance_id);
-	matrix_4x4 out_matrix = model_mat->out_matrix;
+	matrix_4x4* out_matrix = (matrix_4x4*) dyn_get_void_ptr(&model->instances_model_matrix, instance_id);
 
 	const vector3 rotate_vec = model_mat->xyz_rotation;
 	set_rotate_mat4x4(
-		&out_matrix, 
+		out_matrix, 
 		get_vec3(rotate_vec.arr, 0),
 		get_vec3(rotate_vec.arr, 1),
 		get_vec3(rotate_vec.arr, 2)
 	);
 	
 	const vector3 scale_vec = model_mat->xyz_scale;
-	get_4x4(out_matrix.arr, 0, 0) *= get_vec3(scale_vec.arr, 0);
-	get_4x4(out_matrix.arr, 0, 1) *= get_vec3(scale_vec.arr, 0);
-	get_4x4(out_matrix.arr, 0, 2) *= get_vec3(scale_vec.arr, 0);
+	get_4x4(out_matrix->arr, 0, 0) *= get_vec3(scale_vec.arr, 0);
+	get_4x4(out_matrix->arr, 0, 1) *= get_vec3(scale_vec.arr, 0);
+	get_4x4(out_matrix->arr, 0, 2) *= get_vec3(scale_vec.arr, 0);
 
-	get_4x4(out_matrix.arr, 1, 0) *= get_vec3(scale_vec.arr, 1);
-	get_4x4(out_matrix.arr, 1, 1) *= get_vec3(scale_vec.arr, 1);
-	get_4x4(out_matrix.arr, 1, 2) *= get_vec3(scale_vec.arr, 1);
+	get_4x4(out_matrix->arr, 1, 0) *= get_vec3(scale_vec.arr, 1);
+	get_4x4(out_matrix->arr, 1, 1) *= get_vec3(scale_vec.arr, 1);
+	get_4x4(out_matrix->arr, 1, 2) *= get_vec3(scale_vec.arr, 1);
 
-	get_4x4(out_matrix.arr, 2, 0) *= get_vec3(scale_vec.arr, 2);
-	get_4x4(out_matrix.arr, 2, 1) *= get_vec3(scale_vec.arr, 2);
-	get_4x4(out_matrix.arr, 2, 2) *= get_vec3(scale_vec.arr, 2);
+	get_4x4(out_matrix->arr, 2, 0) *= get_vec3(scale_vec.arr, 2);
+	get_4x4(out_matrix->arr, 2, 1) *= get_vec3(scale_vec.arr, 2);
+	get_4x4(out_matrix->arr, 2, 2) *= get_vec3(scale_vec.arr, 2);
 
 	const vector3 coords_vec = model_mat->xyz_coords;
-	get_4x4(out_matrix.arr, 3, 0) = get_vec3(coords_vec.arr, 0);
-	get_4x4(out_matrix.arr, 3, 1) = get_vec3(coords_vec.arr, 1);
-	get_4x4(out_matrix.arr, 3, 2) = get_vec3(coords_vec.arr, 2);
+	get_4x4(out_matrix->arr, 3, 0) = get_vec3(coords_vec.arr, 0);
+	get_4x4(out_matrix->arr, 3, 1) = get_vec3(coords_vec.arr, 1);
+	get_4x4(out_matrix->arr, 3, 2) = get_vec3(coords_vec.arr, 2);
 }
-
-
 
 Model* newModel()
 {
@@ -50,6 +48,7 @@ void initialiseModel(Model* const model)
 
 	set_dyn_array(&model->instances, DYN_ARRAY_NO_TYPE);
 	override_item_size_dyn_array(&model->instances, sizeof(struct model_matrix));
+	set_dyn_array(&model->instances_model_matrix, DYN_ARRAY_MATRIX_4X4_TYPE);
 }
 
 void loadObjectToModel(Model* model, const char* path)
@@ -81,11 +80,13 @@ void loadTextureToModel(Model* model, const char* path)
 }
 
 /*
-	Returns instance id.
+	Returns instance id or -1 if too many instances for the model exist.
 */
 MODEL_INST_ID_TYPE addModelInstance(Model* const model, const vector3 coords, const vector3 scale, const vector3 rotation)
 {
+	if (model->instances.current_size == MAX_INSTANCES) return -1;
 	add_slot_dyn_array(&model->instances);
+	add_slot_dyn_array(&model->instances_model_matrix);
 	((struct model_matrix*) dyn_get_last_void_ptr(&model->instances))->xyz_coords = coords;
 	((struct model_matrix*) dyn_get_last_void_ptr(&model->instances))->xyz_scale = scale;
 	((struct model_matrix*) dyn_get_last_void_ptr(&model->instances))->xyz_rotation = rotation;
@@ -104,7 +105,7 @@ void clean_model(Model* model)
 	clean_dyn_array(&model->indexed_normals);
 	clean_dyn_array(&model->indexes);
 	clean_dyn_array(&model->instances);
-
+	clean_dyn_array(&model->instances_model_matrix);
 	
 	glDeleteBuffers(1, &model->vertexbufferID);
 	glDeleteBuffers(1, &model->uvbufferID);

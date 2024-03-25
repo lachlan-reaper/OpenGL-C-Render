@@ -125,9 +125,9 @@ int primeRenderEngine(render_engine_struct* const re_struct)
 	}
 
 	// Get a handle for our "MVP" uniform
-	re_struct->ids.MatrixID = glGetUniformLocation(re_struct->ids.programID, "MVP");
+	re_struct->ids.VPMatrixID = glGetUniformLocation(re_struct->ids.programID, "VP");
 	re_struct->ids.ViewMatrixID = glGetUniformLocation(re_struct->ids.programID, "V");
-	re_struct->ids.ModelMatrixID = glGetUniformLocation(re_struct->ids.programID, "M");
+	re_struct->ids.InstanceModelArrID = glGetUniformLocation(re_struct->ids.programID, "instance_M");
 
 	{ // Camera and lights initialisation
 		// Get a handle for our "LightPosition" uniform
@@ -157,10 +157,9 @@ int drawRenderEngine(render_engine_struct* const re_struct)
 	}
 
 	re_struct->buffer_draw_function(re_struct);
-	calc_camera_mvp(&re_struct->camera, re_struct->window_width, re_struct->window_height);
+	calc_camera_vp(&re_struct->camera, re_struct->window_width, re_struct->window_height);
 
-	glUniformMatrix4fv(re_struct->ids.MatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.MVP.arr, 0, 0));
-	glUniformMatrix4fv(re_struct->ids.ModelMatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.model.arr, 0, 0));
+	glUniformMatrix4fv(re_struct->ids.VPMatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.VP.arr, 0, 0));
 	glUniformMatrix4fv(re_struct->ids.ViewMatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.view.arr, 0, 0));
 
 	glUniform3f(re_struct->ids.LightID, get_vec3(re_struct->lightPos.arr, 0), get_vec3(re_struct->lightPos.arr, 1), get_vec3(re_struct->lightPos.arr, 2));
@@ -172,6 +171,13 @@ int drawRenderEngine(render_engine_struct* const re_struct)
 	for (int i = 0; i < re_struct->models.current_size; i++)
 	{
 		Model* const model = ((Model*)dyn_get_void_ptr(&re_struct->models, i));
+
+		glUniformMatrix4fv(
+			re_struct->ids.InstanceModelArrID, 
+			model->instances_model_matrix.current_size, 
+			GL_FALSE, 
+			&get_4x4(dyn_get_4x4(model->instances_model_matrix.data, 0).arr, 0, 0)
+		);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, model->Texture);
@@ -215,7 +221,7 @@ int drawRenderEngine(render_engine_struct* const re_struct)
 			model->indexes.current_size, 
 			GL_UNSIGNED_INT, 
 			(void*)0,
-			model->instances.current_size
+			model->instances_model_matrix.current_size
 		);
 	}
 
@@ -258,12 +264,11 @@ MODEL_ID_TYPE addModel(render_engine_struct* const re_struct, const char* obj_pa
 	return re_struct->models.current_size - 1;
 }
 
-// TODO: TBU
-MODEL_INST_ID_TYPE add_instance_of_model(render_engine_struct* const re_struct, const MODEL_ID_TYPE model_id)
+/*
+	Returns instance id or -1 if too many instances for the model exist.
+*/
+MODEL_INST_ID_TYPE add_instance_of_model(render_engine_struct* const re_struct, const MODEL_ID_TYPE model_id, const vector3 coords, const vector3 scale, const vector3 rotation)
 {
-	const vector3 coords = {{0, 0, 0}};
-	const vector3 scale = {{1, 1, 1}};
-	const vector3 rotation = {{0, 0, 0}};
 	return addModelInstance(dyn_get_void_ptr(&re_struct->models, model_id), coords, scale, rotation);
 }
 
