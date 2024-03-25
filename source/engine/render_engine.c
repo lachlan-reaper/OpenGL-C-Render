@@ -140,43 +140,6 @@ int drawRenderEngine(render_engine_struct* const re_struct)
 	return 0;
 }
 
-MODEL_ID_TYPE addModel(render_engine_struct* const re_struct, const char* obj_path, const char* texture_path)
-{
-	Model* const model = add_slot_dyn_array(&(re_struct->models));
-	initialiseModel(model);
-	loadObjectToModel(model, obj_path);
-	loadTextureToModel(model, texture_path);
-
-	{ // Generate VBO buffers
-		// TODO: Maybe??? move all buffer related stuff to defaults (since it is dependent on shaders ig?)
-		glGenBuffers(1, &model->vertexbufferID);
-		glBindBuffer(GL_ARRAY_BUFFER, model->vertexbufferID);
-		glBufferData(GL_ARRAY_BUFFER, model->indexed_vertices.current_size * sizeof(vector3), &dyn_get_vec3(model->indexed_vertices.data, 0), GL_STATIC_DRAW);
-
-		glGenBuffers(1, &model->uvbufferID);
-		glBindBuffer(GL_ARRAY_BUFFER, model->uvbufferID);
-		glBufferData(GL_ARRAY_BUFFER, model->indexed_uvs.current_size * sizeof(vector2), &dyn_get_vec2(model->indexed_uvs.data, 0), GL_STATIC_DRAW);
-
-		glGenBuffers(1, &model->normalbufferID);
-		glBindBuffer(GL_ARRAY_BUFFER, model->normalbufferID);
-		glBufferData(GL_ARRAY_BUFFER, model->indexed_normals.current_size * sizeof(vector3), &dyn_get_vec3(model->indexed_normals.data, 0), GL_STATIC_DRAW);
-
-		glGenBuffers(1, &model->indexbufferID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->indexbufferID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, model->indexes.current_size * sizeof(unsigned int), &dyn_get_uint(model->indexes.data, 0), GL_STATIC_DRAW);
-	}
-
-	return re_struct->models.current_size - 1;
-}
-
-/*
-Returns instance id.
-*/
-MODEL_INST_ID_TYPE add_instance_of_model(render_engine_struct* const re_struct, const MODEL_ID_TYPE model_id, const vector3 coords, const vector3 scale, const vector3 rotation)
-{
-	return addModelInstance(dyn_get_void_ptr(&re_struct->models, model_id), coords, scale, rotation);
-}
-
 int cleanupRenderEngine(render_engine_struct* const re_struct)
 {
 	if (re_struct->buffer_clean_up_function == NULL)
@@ -212,6 +175,43 @@ int cleanupRenderEngine(render_engine_struct* const re_struct)
 
 	glfwTerminate();
 	return 0;
+}
+
+MODEL_ID_TYPE addModel(render_engine_struct* const re_struct, const char* obj_path, const char* texture_path)
+{
+	Model* const model = add_slot_dyn_array(&(re_struct->models));
+	initialiseModel(model);
+	loadObjectToModel(model, obj_path);
+	loadTextureToModel(model, texture_path);
+
+	{ // Generate VBO buffers
+		// TODO: Maybe??? move all buffer related stuff to defaults (since it is dependent on shaders ig?)
+		glGenBuffers(1, &model->vertexbufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, model->vertexbufferID);
+		glBufferData(GL_ARRAY_BUFFER, model->indexed_vertices.current_size * sizeof(vector3), &dyn_get_vec3(model->indexed_vertices.data, 0), GL_STATIC_DRAW);
+
+		glGenBuffers(1, &model->uvbufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, model->uvbufferID);
+		glBufferData(GL_ARRAY_BUFFER, model->indexed_uvs.current_size * sizeof(vector2), &dyn_get_vec2(model->indexed_uvs.data, 0), GL_STATIC_DRAW);
+
+		glGenBuffers(1, &model->normalbufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, model->normalbufferID);
+		glBufferData(GL_ARRAY_BUFFER, model->indexed_normals.current_size * sizeof(vector3), &dyn_get_vec3(model->indexed_normals.data, 0), GL_STATIC_DRAW);
+
+		glGenBuffers(1, &model->indexbufferID);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->indexbufferID);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, model->indexes.current_size * sizeof(unsigned int), &dyn_get_uint(model->indexes.data, 0), GL_STATIC_DRAW);
+	}
+
+	return re_struct->models.current_size - 1;
+}
+
+/*
+Returns instance id.
+*/
+MODEL_INST_ID_TYPE add_instance_of_model(render_engine_struct* const re_struct, const MODEL_ID_TYPE model_id, const vector3 coords, const vector3 scale, const vector3 rotation)
+{
+	return addModelInstance(dyn_get_void_ptr(&re_struct->models, model_id), coords, scale, rotation);
 }
 
 int run(render_engine_struct* re_struct) 

@@ -57,11 +57,12 @@ struct render_engine_struct {
 
 render_engine_struct* initialiseRenderEngine(const int window_width, const int window_height);
 int primeRenderEngine(render_engine_struct* const re_struct);
-int run(render_engine_struct* const re_struct);
+int drawRenderEngine(render_engine_struct* const re_struct);
+int cleanupRenderEngine(render_engine_struct* const re_struct);
 
 MODEL_ID_TYPE addModel(render_engine_struct* const re_struct, const char* obj_path, const char* texture_path);
 MODEL_INST_ID_TYPE add_instance_of_model(render_engine_struct* const re_struct, const MODEL_ID_TYPE model_id, const vector3 coords, const vector3 scale, const vector3 rotation);
 
-int cleanupRenderEngine(render_engine_struct* const re_struct);
+int run(render_engine_struct* const re_struct);
 
 #endif
