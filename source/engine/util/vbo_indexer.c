@@ -10,7 +10,7 @@ struct PackedVertex{
 
 #define COMP_PackedVertexs(PV_1, PV_2) memcmp((void*)(PV_1), (void*)(PV_2), sizeof(struct PackedVertex))
 
-// TBU: update to binary search and insertion (for sorting)
+// TODO TBU: update to binary search and insertion (for sorting)
 const unsigned int find_PV_in_dyn_array(dyn_array* VertexToOutIndex, struct PackedVertex* packed)
 {
 	int i = 0;
@@ -76,7 +76,7 @@ void indexVBO(
 			add_slot_dyn_array(out_indices);
 			dyn_get_last_uint(out_indices) = out_vertices->current_size - 1;
 
-			// TBU: make binary insert
+			// TODO TBU: make binary insert
 			add_slot_dyn_array(&VertexToOutIndex);
 			*((struct PackedVertex*)dyn_get_last_void_ptr(&VertexToOutIndex)) = packed;
 		}

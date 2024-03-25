@@ -18,7 +18,6 @@ struct model_matrix {
 	vector3 xyz_coords;
 	vector3 xyz_scale;
 	vector3 xyz_rotation;
-	matrix_4x4 out_matrix;
 };
 
 typedef struct Model {
@@ -38,10 +37,10 @@ typedef struct Model {
 	GLuint Texture;
 } Model;
 
-Model* newModel();
+Model* newModel(void);
 void initialiseModel(Model* const model);
-void loadObjectToModel(Model* model, const char* path);
-void loadTextureToModel(Model* model, const char* path);
+void loadObjectToModel(Model* const model, const char* path);
+void loadTextureToModel(Model* const model, const char* path);
 
 MODEL_INST_ID_TYPE addModelInstance(Model* const model, const vector3 coors, const vector3 scale, const vector3 rotation);
 

@@ -17,7 +17,7 @@ out vec3 LightDirection_cameraspace;
 uniform mat4 VP;
 uniform mat4 V;
 uniform vec3 LightPosition_worldspace;
-uniform mat4 instance_M[MAX_INSTANCES]; // TODO: FIX TO BE ADAPTABLE
+uniform mat4 instance_M[MAX_INSTANCES];
 
 void main(){
 	mat4 worldspace_M = instance_M[gl_InstanceID];

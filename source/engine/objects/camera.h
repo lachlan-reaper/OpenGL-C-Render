@@ -21,8 +21,8 @@ typedef struct Camera {
 	matrix_4x4 VP;
 } Camera;
 
-void set_camera(Camera* camera, const VECTOR_FLT horizontal_angle, const VECTOR_FLT vertical_angle, const VECTOR_FLT FOV);
-static inline void set_camera_position(Camera* camera, const VECTOR_FLT x, const VECTOR_FLT y, const VECTOR_FLT z)
+void set_camera(Camera* const camera, const VECTOR_FLT horizontal_angle, const VECTOR_FLT vertical_angle, const VECTOR_FLT FOV);
+static inline void set_camera_position(Camera* const camera, const VECTOR_FLT x, const VECTOR_FLT y, const VECTOR_FLT z)
 {
 	set_vec3(&camera->position, x, y, z);
 }
@@ -30,7 +30,7 @@ static inline void set_camera_position(Camera* camera, const VECTOR_FLT x, const
 /*
 	To be called after any change to the angles
 */
-static inline void update_vectors(Camera* camera)
+static inline void update_vectors(Camera* const camera)
 {
 	set_vec3(&camera->direction,
 		cos(camera->vertical_angle) * sin(camera->horizontal_angle),
@@ -50,7 +50,7 @@ static inline void update_vectors(Camera* camera)
 /*
 	delta_??? = distance * deltaTime * speed;
 */
-static inline void update_angles(Camera* camera, const VECTOR_FLT delta_horz, const VECTOR_FLT delta_vert)
+static inline void update_angles(Camera* const camera, const VECTOR_FLT delta_horz, const VECTOR_FLT delta_vert)
 {
 	camera->horizontal_angle += delta_horz;
 	camera->vertical_angle += delta_vert;
@@ -61,7 +61,7 @@ static inline void update_angles(Camera* camera, const VECTOR_FLT delta_horz, co
 /*
 	delta_??? = deltaTime * speed;
 */
-static inline void update_position(Camera* camera, const VECTOR_FLT delta_forward, const VECTOR_FLT delta_right, const VECTOR_FLT delta_up)
+static inline void update_position(Camera* const camera, const VECTOR_FLT delta_forward, const VECTOR_FLT delta_right, const VECTOR_FLT delta_up)
 {
 	vector3 tmp_vect;
 
@@ -78,12 +78,12 @@ static inline void update_position(Camera* camera, const VECTOR_FLT delta_forwar
 	add_vec3s(&tmp_vect, &camera->position);
 }
 
-static inline void update_FOV(Camera* camera, const VECTOR_FLT delta_FOV)
+static inline void update_FOV(Camera* const camera, const VECTOR_FLT delta_FOV)
 {
 	camera->FOV += delta_FOV;
 }
 
-static inline void camera_look_at(const Camera* camera, matrix_4x4* view)
+static inline void camera_look_at(const Camera* const camera, matrix_4x4* view)
 {
 	vector3 look_at;
 	copy_to_vec3(&camera->direction, &look_at);
@@ -92,7 +92,7 @@ static inline void camera_look_at(const Camera* camera, matrix_4x4* view)
 	set_look_at_mat4x4(view, &camera->position, &look_at, &camera->up);
 }
 
-static inline void camera_perspective(const Camera* camera, matrix_4x4* perspective, const int window_width, const int window_height)
+static inline void camera_perspective(const Camera* const camera, matrix_4x4* perspective, const int window_width, const int window_height)
 {
 	set_perspective_mat4x4(perspective, deg_to_rad(camera->FOV), (VECTOR_FLT)window_width/(VECTOR_FLT)window_height, 0.1f, 100.0f);
 }
@@ -100,7 +100,7 @@ static inline void camera_perspective(const Camera* camera, matrix_4x4* perspect
 /*
 	GLSL formatted VP is stored in VP; V and P also updated
 */
-static inline void calc_camera_vp(Camera* camera, const int window_width, const int window_height)
+static inline void calc_camera_vp(Camera* const camera, const int window_width, const int window_height)
 {
 	camera_look_at(camera, &camera->view); // View
 	copy_to_mat4x4(&camera->view, &camera->VP);

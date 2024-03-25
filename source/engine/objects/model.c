@@ -32,7 +32,7 @@ static void recalc_instance_out_matrix(Model* const model, const MODEL_INST_ID_T
 	get_4x4(out_matrix->arr, 3, 2) = get_vec3(coords_vec.arr, 2);
 }
 
-Model* newModel()
+Model* newModel(void)
 {
 	Model* model = (Model*) calloc(1, sizeof(Model));
 	initialiseModel(model);
@@ -51,7 +51,7 @@ void initialiseModel(Model* const model)
 	set_dyn_array(&model->instances_model_matrix, DYN_ARRAY_MATRIX_4X4_TYPE);
 }
 
-void loadObjectToModel(Model* model, const char* path)
+void loadObjectToModel(Model* const model, const char* path)
 {
 	dyn_array vertices;
 	dyn_array uvs;
@@ -74,7 +74,7 @@ void loadObjectToModel(Model* model, const char* path)
 	indexVBO(&vertices, &uvs, &normals, &model->indexes, &model->indexed_vertices, &model->indexed_uvs, &model->indexed_normals);
 }
 
-void loadTextureToModel(Model* model, const char* path)
+void loadTextureToModel(Model* const model, const char* path)
 {
 	model->Texture = loadDDS(path);
 }
