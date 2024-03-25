@@ -28,20 +28,7 @@ typedef struct render_engine_struct render_engine_struct;
 	#define MAX_INSTANCES_BATCH 200
 #endif
 
-typedef int (*re_process_function)(render_engine_struct*);
-
-struct render_engine_IDs {
-	GLuint VertexArrayID;
-	GLuint programID;
-
-	GLuint VPMatrixID;
-	GLuint ViewMatrixID;
-	GLuint InstanceModelArrID;
-
-	GLuint LightID;
-
-	GLuint textureHandle;
-};
+typedef int (*re_process_function)(render_engine_struct* const);
 
 struct render_engine_struct {
 	GLFWwindow* window;
@@ -49,19 +36,20 @@ struct render_engine_struct {
 
 	int window_width;
 	int window_height;
+
 	char* vertex_shader_path;
 	char* fragment_shader_path;
+	GLuint programID;
 
-	struct render_engine_IDs ids;
 	dyn_array models; // type: Model
 
 	vector4 default_bg; // RGBA
-	vector3 lightPos;
 
 	re_process_function prime_function; // return (0: success, !0: failure)
 	re_process_function process_function; // return (0: success, !0: failure)
 	re_process_function clean_up_function; // return (0: success, !0: failure)
 
+	void* buffer_data;
 	re_process_function buffer_prime_function; // return (0: success, !0: failure)
 	re_process_function buffer_draw_function; // return (0: success, !0: failure)
 	re_process_function buffer_clean_up_function; // return (0: success, !0: failure)

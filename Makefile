@@ -23,7 +23,7 @@ COMP_FILES += $(ENG_PATH)/objects/model.c
 COMP_FILES += $(ENG_PATH)/render_engine.c 
 COMP_FILES += $(ENG_PATH)/default/basic_3d_functions.c
 
-COMP_FILES += $(EXT_PATH)/movement.c
+COMP_FILES += $(EXT_PATH)/default/movement.c
 COMP_FILES += $(EXT_PATH)/default/basic_movement.c
 
 COMP_FILES += $(MAIN_FILE)

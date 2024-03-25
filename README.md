@@ -1,6 +1,6 @@
 # OpenGL-C-Render
 
-A quick simple rendering engine to be designed for later personal project light-weight use.
+A quick simple rendering engine to be designed for later personal project light-weight use. The goal of this render engine is not to be optimised for all usages and operations, or even to be extravagantly optimised in any other way, but rather to be a framework for other projects that will then have a basis for development and no longer need as much work. This is built for the source code to be adapted and changed.
 
 While currently platform-dependent, the aim is to restructure later to become platform-agnostic as best as possible.
 
@@ -12,7 +12,7 @@ Orignially based on the [OpenGL tutorial for beginners](http://www.opengl-tutori
 [ext](./source/ext/) folder contains all of the code that can be used for basic/common goals (i.e. movement) as well as all objects and textures to be used for the render engine. <br>
 [core.c](./source/core.c) contains the instantiation and constants for use during runtime. <br>
 
-See documentation [here](./source/engine/doc.md)
+See render engine documentation [here](./source/engine/doc.md)
 
 ## Build and Execution
 

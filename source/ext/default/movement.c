@@ -1,6 +1,6 @@
 #include "movement.h"
 
-void process_camera_movement(render_engine_struct* re_struct, const VECTOR_FLT delta_time)
+void process_camera_movement(render_engine_struct* const re_struct, const VECTOR_FLT delta_time)
 {
 	VECTOR_FLT forward;
 	VECTOR_FLT right;

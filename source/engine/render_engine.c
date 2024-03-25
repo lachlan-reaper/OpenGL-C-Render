@@ -98,16 +98,6 @@ int primeRenderEngine(render_engine_struct* const re_struct)
 		glEnable(GL_CULL_FACE);
 	}
 
-	{ // Basic program and vertex buffers
-		re_struct->ids.programID = LoadShaders(re_struct->vertex_shader_path, re_struct->fragment_shader_path);
-
-		glGenVertexArrays(1, &re_struct->ids.VertexArrayID);
-		glBindVertexArray(re_struct->ids.VertexArrayID);
-		glUseProgram(re_struct->ids.programID);
-
-		re_struct->ids.textureHandle = glGetUniformLocation(re_struct->ids.programID, "myTextureSampler");
-	}
-
 	int res;
 	res = re_struct->buffer_prime_function(re_struct);
 	if (res != 0)
@@ -116,121 +106,33 @@ int primeRenderEngine(render_engine_struct* const re_struct)
 		return 2;
 	}
 
-	re_struct->ids.VPMatrixID = glGetUniformLocation(re_struct->ids.programID, "VP");
-	re_struct->ids.ViewMatrixID = glGetUniformLocation(re_struct->ids.programID, "V");
-	re_struct->ids.InstanceModelArrID = glGetUniformLocation(re_struct->ids.programID, "instance_M");
-
-	{ // Camera and lights initialisation
-		re_struct->ids.LightID = glGetUniformLocation(re_struct->ids.programID, "LightPosition_worldspace");
-
+	{ // Camera initialisation
 		set_camera(&re_struct->camera, deg_to_rad(24.0f), deg_to_rad(-24.0f), 45.0f);
 		set_camera_position(&re_struct->camera, -3, 3, -7);
-
-		set_vec3(&re_struct->lightPos, 4, 4, 4);
 	}
 
 	return 0;
 }
 
-static void bindModel(const render_engine_struct* const re_struct, const Model* const model)
-{
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, model->Texture);
-	glUniform1i(re_struct->ids.textureHandle, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, model->vertexbufferID);
-	glVertexAttribPointer(
-		0,                  // attribute 0
-		3,                  // size
-		GL_FLOAT,           // type
-		GL_FALSE,           // normalized?
-		0,                  // stride
-		(void*)0            // array buffer offset
-	);
-
-	glBindBuffer(GL_ARRAY_BUFFER, model->uvbufferID);
-	glVertexAttribPointer(
-		1,                                // attribute
-		2,                                // size
-		GL_FLOAT,                         // type
-		GL_FALSE,                         // normalized?
-		0,                                // stride
-		(void*)0                          // array buffer offset
-	);
-
-	glBindBuffer(GL_ARRAY_BUFFER, model->normalbufferID);
-	glVertexAttribPointer(
-		2,                                // attribute
-		3,                                // size
-		GL_FLOAT,                         // type
-		GL_FALSE,                         // normalized?
-		0,                                // stride
-		(void*)0                          // array buffer offset
-	);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->indexbufferID);
-}
-
-static void bindInstancesAndDraw(const render_engine_struct* const re_struct, const Model* const model, const int size, const int instance_base)
-{
-	glUniformMatrix4fv(
-		re_struct->ids.InstanceModelArrID, 
-		size,
-		GL_FALSE, 
-		&get_4x4(dyn_get_4x4(model->instances_model_matrix.data, instance_base).arr, 0, 0)
-	);
-
-	glDrawElementsInstanced(
-		GL_TRIANGLES, 
-		model->indexes.current_size, 
-		GL_UNSIGNED_INT, 
-		(void*)0,
-		model->instances_model_matrix.current_size
-	);
-}
-
 int drawRenderEngine(render_engine_struct* const re_struct)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glUseProgram(re_struct->ids.programID);
-
 	if (re_struct->buffer_draw_function == NULL)
 	{
 		printf("No provided buffer_draw_function\n");
 		return 1;
 	}
 
-	re_struct->buffer_draw_function(re_struct);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glUseProgram(re_struct->programID);
+
 	calc_camera_vp(&re_struct->camera, re_struct->window_width, re_struct->window_height);
 
-	glUniformMatrix4fv(re_struct->ids.VPMatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.VP.arr, 0, 0));
-	glUniformMatrix4fv(re_struct->ids.ViewMatrixID, 1, GL_FALSE, &get_4x4(re_struct->camera.view.arr, 0, 0));
-
-	glUniform3f(re_struct->ids.LightID, get_vec3(re_struct->lightPos.arr, 0), get_vec3(re_struct->lightPos.arr, 1), get_vec3(re_struct->lightPos.arr, 2));
-
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-
-	for (int i = 0; i < re_struct->models.current_size; i++)
+	int res = re_struct->buffer_draw_function(re_struct);
+	if (res != 0)
 	{
-		Model* const model = ((Model*)dyn_get_void_ptr(&re_struct->models, i));
-		bindModel(re_struct, model);
-
-		for (int batch_base = 0; batch_base < model->instances_model_matrix.current_size; batch_base += MAX_INSTANCES_BATCH)
-		{
-			bindInstancesAndDraw(
-				re_struct, 
-				model, 
-				min(model->instances_model_matrix.current_size - batch_base, MAX_INSTANCES_BATCH), 
-				batch_base
-			);
-		}
-	}
-
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
+		printf("Error on buffer draw function: %d\n", res);
+		return 2;
+	};
 
 	glfwSwapBuffers(re_struct->window);
 	glfwPollEvents();
@@ -240,30 +142,31 @@ int drawRenderEngine(render_engine_struct* const re_struct)
 
 MODEL_ID_TYPE addModel(render_engine_struct* const re_struct, const char* obj_path, const char* texture_path)
 {
-Model* const model = add_slot_dyn_array(&(re_struct->models));
-initialiseModel(model);
-loadObjectToModel(model, obj_path);
-loadTextureToModel(model, texture_path);
+	Model* const model = add_slot_dyn_array(&(re_struct->models));
+	initialiseModel(model);
+	loadObjectToModel(model, obj_path);
+	loadTextureToModel(model, texture_path);
 
-{ // Generate VBO buffers
-	glGenBuffers(1, &model->vertexbufferID);
-	glBindBuffer(GL_ARRAY_BUFFER, model->vertexbufferID);
-	glBufferData(GL_ARRAY_BUFFER, model->indexed_vertices.current_size * sizeof(vector3), &dyn_get_vec3(model->indexed_vertices.data, 0), GL_STATIC_DRAW);
+	{ // Generate VBO buffers
+		// TODO: Maybe??? move all buffer related stuff to defaults (since it is dependent on shaders ig?)
+		glGenBuffers(1, &model->vertexbufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, model->vertexbufferID);
+		glBufferData(GL_ARRAY_BUFFER, model->indexed_vertices.current_size * sizeof(vector3), &dyn_get_vec3(model->indexed_vertices.data, 0), GL_STATIC_DRAW);
 
-	glGenBuffers(1, &model->uvbufferID);
-	glBindBuffer(GL_ARRAY_BUFFER, model->uvbufferID);
-	glBufferData(GL_ARRAY_BUFFER, model->indexed_uvs.current_size * sizeof(vector2), &dyn_get_vec2(model->indexed_uvs.data, 0), GL_STATIC_DRAW);
+		glGenBuffers(1, &model->uvbufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, model->uvbufferID);
+		glBufferData(GL_ARRAY_BUFFER, model->indexed_uvs.current_size * sizeof(vector2), &dyn_get_vec2(model->indexed_uvs.data, 0), GL_STATIC_DRAW);
 
-	glGenBuffers(1, &model->normalbufferID);
-	glBindBuffer(GL_ARRAY_BUFFER, model->normalbufferID);
-	glBufferData(GL_ARRAY_BUFFER, model->indexed_normals.current_size * sizeof(vector3), &dyn_get_vec3(model->indexed_normals.data, 0), GL_STATIC_DRAW);
+		glGenBuffers(1, &model->normalbufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, model->normalbufferID);
+		glBufferData(GL_ARRAY_BUFFER, model->indexed_normals.current_size * sizeof(vector3), &dyn_get_vec3(model->indexed_normals.data, 0), GL_STATIC_DRAW);
 
-	glGenBuffers(1, &model->indexbufferID);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->indexbufferID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, model->indexes.current_size * sizeof(unsigned int), &dyn_get_uint(model->indexes.data, 0), GL_STATIC_DRAW);
-}
+		glGenBuffers(1, &model->indexbufferID);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model->indexbufferID);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, model->indexes.current_size * sizeof(unsigned int), &dyn_get_uint(model->indexes.data, 0), GL_STATIC_DRAW);
+	}
 
-return re_struct->models.current_size - 1;
+	return re_struct->models.current_size - 1;
 }
 
 /*
@@ -276,6 +179,12 @@ MODEL_INST_ID_TYPE add_instance_of_model(render_engine_struct* const re_struct, 
 
 int cleanupRenderEngine(render_engine_struct* const re_struct)
 {
+	if (re_struct->buffer_clean_up_function == NULL)
+	{
+		printf("No provided buffer clean up function\n");
+		return 1;
+	}
+
 	if (re_struct->clean_up_function != NULL)
 	{
 		int res;
@@ -283,32 +192,23 @@ int cleanupRenderEngine(render_engine_struct* const re_struct)
 		if (res != 0)
 		{
 			printf("Error on clean up function: %d\n", res);
-			return 1;
+			return 2;
 		}
 	}
 
-	if (re_struct->buffer_clean_up_function == NULL)
+	int res;
+	res = re_struct->buffer_clean_up_function(re_struct);
+	if (res != 0)
 	{
-		printf("No provided buffer clean up function\n");
-	}
-	else 
-	{
-		int res;
-		res = re_struct->buffer_clean_up_function(re_struct);
-		if (res != 0)
-		{
-			printf("Error on buffer clean up function: %d\n", res);
-			return 1;
-		}
+		printf("Error on buffer clean up function: %d\n", res);
+		return 2;
 	}
 
 	for (int i = 0; i < re_struct->models.current_size; i++) clean_model(dyn_get_void_ptr(&re_struct->models, i));
 
 	clean_dyn_array(&re_struct->models);
 
-	glDeleteVertexArrays(1, &re_struct->ids.VertexArrayID);
-
-	glDeleteProgram(re_struct->ids.programID);
+	glDeleteProgram(re_struct->programID);
 
 	glfwTerminate();
 	return 0;

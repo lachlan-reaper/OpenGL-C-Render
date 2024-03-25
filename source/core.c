@@ -7,7 +7,6 @@ int main(void)
 
 	set_all_basic_3d_funtions(re_struct);
 	set_basic_movement(re_struct);
-
 	set_vec4(&re_struct->default_bg, 0.0f, 0.0f, 0.4f, 0.0f);
 
 	MODEL_ID_TYPE model_id = addModel(re_struct, "./source/ext/objects/suzanne.obj", "./source/ext/textures/cubeuvmap.DDS");
@@ -15,7 +14,6 @@ int main(void)
 	vector3 coords = {{0, 0, 0}};
 	vector3 scale = {{1, 1, 1}};
 	vector3 rotation = {{0, 0, 0}};
-
 
 	const int space = 3;
 	const int num_base = 7;
