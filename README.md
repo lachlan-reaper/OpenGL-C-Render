@@ -12,7 +12,7 @@ Orignially based on the [OpenGL tutorial for beginners](http://www.opengl-tutori
 [ext](./source/ext/) folder contains all of the code that can be used for basic/common goals (i.e. movement) as well as all objects and textures to be used for the render engine. <br>
 [core.c](./source/core.c) contains the instantiation and constants for use during runtime. <br>
 
-See documentation [here](.)
+See documentation [here](./source/engine/doc.md)
 
 ## Build and Execution
 
