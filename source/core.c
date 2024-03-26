@@ -16,7 +16,7 @@ int main(void)
 	vector3 rotation = {{0, 0, 0}};
 
 	const int space = 3;
-	const int num_base = 7;
+	const int num_base = 10;
 	const int num_sq = num_base * num_base;
 	const int num_cu = num_base * num_sq;
 

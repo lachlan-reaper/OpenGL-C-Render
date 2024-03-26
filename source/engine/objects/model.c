@@ -3,7 +3,7 @@
 static void recalc_instance_out_matrix(Model* const model, const MODEL_INST_ID_TYPE instance_id)
 {
 	struct model_matrix* const model_mat = (struct model_matrix*) dyn_get_void_ptr(&model->instances, instance_id);
-	matrix_4x4* out_matrix = (matrix_4x4*) dyn_get_void_ptr(&model->instances_model_matrix, instance_id);
+	matrix_4x4* out_matrix = &dyn_get_4x4(model->instances_model_matrix.data, instance_id);
 
 	const vector3 rotate_vec = model_mat->xyz_rotation;
 	set_rotate_mat4x4(
@@ -49,6 +49,12 @@ void initialiseModel(Model* const model)
 	set_dyn_array(&model->instances, DYN_ARRAY_NO_TYPE);
 	override_item_size_dyn_array(&model->instances, sizeof(struct model_matrix));
 	set_dyn_array(&model->instances_model_matrix, DYN_ARRAY_MATRIX_4X4_TYPE);
+
+	model->vertexbufferID = 0;
+	model->uvbufferID = 0;
+	model->normalbufferID = 0;
+	model->indexbufferID = 0;
+	model->Texture = 0;
 }
 
 void loadObjectToModel(Model* const model, const char* path)
@@ -97,7 +103,7 @@ MODEL_INST_ID_TYPE addModelInstance(Model* const model, const vector3 coords, co
 	return instance_id;
 }
 
-void clean_model(Model* model)
+void clean_model(Model* const model)
 {
 	clean_dyn_array(&model->indexed_vertices);
 	clean_dyn_array(&model->indexed_uvs);

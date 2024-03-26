@@ -16,23 +16,11 @@ typedef struct render_engine_struct render_engine_struct;
 #include "./vectors/matrix_4x4.h"
 
 #include "./util/dyn_array.h"
-#include "./util/shader_loader.h"
-#include "./util/texture_loader.h"
-
-#include "./objects/camera.h"
-#include "./objects/model.h"
-
-#define MODEL_ID_TYPE unsigned int
-
-#ifndef MAX_INSTANCES_BATCH
-	#define MAX_INSTANCES_BATCH 200
-#endif
 
 typedef int (*re_process_function)(render_engine_struct* const);
 
 struct render_engine_struct {
 	GLFWwindow* window;
-	Camera camera;
 
 	int window_width;
 	int window_height;
@@ -41,8 +29,6 @@ struct render_engine_struct {
 	char* fragment_shader_path;
 	GLuint programID;
 
-	dyn_array models; // type: Model
-
 	vector4 default_bg; // RGBA
 
 	re_process_function prime_function; // return (0: success, !0: failure)
@@ -50,6 +36,7 @@ struct render_engine_struct {
 	re_process_function clean_up_function; // return (0: success, !0: failure)
 
 	void* buffer_data;
+	// TODO: REMOVE FUNC PTRS
 	re_process_function buffer_prime_function; // return (0: success, !0: failure)
 	re_process_function buffer_draw_function; // return (0: success, !0: failure)
 	re_process_function buffer_clean_up_function; // return (0: success, !0: failure)
@@ -59,9 +46,6 @@ render_engine_struct* initialiseRenderEngine(const int window_width, const int w
 int primeRenderEngine(render_engine_struct* const re_struct);
 int drawRenderEngine(render_engine_struct* const re_struct);
 int cleanupRenderEngine(render_engine_struct* const re_struct);
-
-MODEL_ID_TYPE addModel(render_engine_struct* const re_struct, const char* obj_path, const char* texture_path);
-MODEL_INST_ID_TYPE add_instance_of_model(render_engine_struct* const re_struct, const MODEL_ID_TYPE model_id, const vector3 coords, const vector3 scale, const vector3 rotation);
 
 int run(render_engine_struct* const re_struct);
 

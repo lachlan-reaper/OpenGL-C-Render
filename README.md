@@ -4,6 +4,8 @@ A quick simple rendering engine to be designed for later personal project light-
 
 While currently platform-dependent, the aim is to restructure later to become platform-agnostic as best as possible.
 
+TODO: Convert set_basic to defines for the include using extern
+
 Orignially based on the [OpenGL tutorial for beginners](http://www.opengl-tutorial.org/beginners-tutorials) and [OpenGL tutorial for intermediates](http://www.opengl-tutorial.org/intermediate-tutorials/), later repurposed for private use.
 
 [libs](./libs) folder to be replaced for platform-agnosticism. <br>

@@ -100,7 +100,7 @@ static inline void camera_perspective(const Camera* const camera, matrix_4x4* pe
 /*
 	GLSL formatted VP is stored in VP; V and P also updated
 */
-static inline void calc_camera_vp(Camera* const camera, const int window_width, const int window_height)
+static inline void calc_camera_3d_vp(Camera* const camera, const int window_width, const int window_height)
 {
 	camera_look_at(camera, &camera->view); // View
 	copy_to_mat4x4(&camera->view, &camera->VP);

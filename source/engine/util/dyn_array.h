@@ -5,6 +5,8 @@
 #include "../vectors/vector2.h"
 #include "../vectors/vector3.h"
 #include "../vectors/vector4.h"
+#include "../vectors/matrix_2x2.h"
+#include "../vectors/matrix_3x3.h"
 #include "../vectors/matrix_4x4.h"
 
 enum dyn_array_type {
@@ -14,6 +16,8 @@ enum dyn_array_type {
 	DYN_ARRAY_VECTOR_2_TYPE,
 	DYN_ARRAY_VECTOR_3_TYPE,
 	DYN_ARRAY_VECTOR_4_TYPE,
+	DYN_ARRAY_MATRIX_2X2_TYPE,
+	DYN_ARRAY_MATRIX_3X3_TYPE,
 	DYN_ARRAY_MATRIX_4X4_TYPE
 };
 
@@ -33,6 +37,8 @@ typedef struct dyn_array {
 #define dyn_get_vec2(DYN_ARRAY_DATA, INDEX) ((vector2*)DYN_ARRAY_DATA)[INDEX]
 #define dyn_get_vec3(DYN_ARRAY_DATA, INDEX) ((vector3*)DYN_ARRAY_DATA)[INDEX]
 #define dyn_get_vec4(DYN_ARRAY_DATA, INDEX) ((vector4*)DYN_ARRAY_DATA)[INDEX]
+#define dyn_get_2x2(DYN_ARRAY_DATA, INDEX) ((matrix_2x2*)DYN_ARRAY_DATA)[INDEX]
+#define dyn_get_3x3(DYN_ARRAY_DATA, INDEX) ((matrix_3x3*)DYN_ARRAY_DATA)[INDEX]
 #define dyn_get_4x4(DYN_ARRAY_DATA, INDEX) ((matrix_4x4*)DYN_ARRAY_DATA)[INDEX]
 
 #define dyn_get_last_int(DYN_ARRAY_STRUCT_PTR) dyn_get_int((DYN_ARRAY_STRUCT_PTR)->data, (DYN_ARRAY_STRUCT_PTR)->current_size - 1)
@@ -40,9 +46,11 @@ typedef struct dyn_array {
 #define dyn_get_last_vec2(DYN_ARRAY_STRUCT_PTR) dyn_get_vec2((DYN_ARRAY_STRUCT_PTR)->data, (DYN_ARRAY_STRUCT_PTR)->current_size - 1)
 #define dyn_get_last_vec3(DYN_ARRAY_STRUCT_PTR) dyn_get_vec3((DYN_ARRAY_STRUCT_PTR)->data, (DYN_ARRAY_STRUCT_PTR)->current_size - 1)
 #define dyn_get_last_vec4(DYN_ARRAY_STRUCT_PTR) dyn_get_vec4((DYN_ARRAY_STRUCT_PTR)->data, (DYN_ARRAY_STRUCT_PTR)->current_size - 1)
+#define dyn_get_last_2x2(DYN_ARRAY_STRUCT_PTR) dyn_get_2x2((DYN_ARRAY_STRUCT_PTR)->data, (DYN_ARRAY_STRUCT_PTR)->current_size - 1)
+#define dyn_get_last_3x3(DYN_ARRAY_STRUCT_PTR) dyn_get_3x3((DYN_ARRAY_STRUCT_PTR)->data, (DYN_ARRAY_STRUCT_PTR)->current_size - 1)
 #define dyn_get_last_4x4(DYN_ARRAY_STRUCT_PTR) dyn_get_4x4((DYN_ARRAY_STRUCT_PTR)->data, (DYN_ARRAY_STRUCT_PTR)->current_size - 1)
 
-static inline void set_dyn_array(dyn_array* dyn_struct, const enum dyn_array_type type)
+static inline void set_dyn_array(dyn_array* const dyn_struct, const enum dyn_array_type type)
 {
 	dyn_struct->type = type;
 	dyn_struct->current_size = 0;
@@ -66,6 +74,12 @@ static inline void set_dyn_array(dyn_array* dyn_struct, const enum dyn_array_typ
 		case DYN_ARRAY_VECTOR_4_TYPE:
 			dyn_struct->item_size = sizeof(vector4);
 			break;
+		case DYN_ARRAY_MATRIX_2X2_TYPE:
+			dyn_struct->item_size = sizeof(matrix_2x2);
+			break;
+		case DYN_ARRAY_MATRIX_3X3_TYPE:
+			dyn_struct->item_size = sizeof(matrix_3x3);
+			break;
 		case DYN_ARRAY_MATRIX_4X4_TYPE:
 			dyn_struct->item_size = sizeof(matrix_4x4);
 			break;
@@ -75,12 +89,15 @@ static inline void set_dyn_array(dyn_array* dyn_struct, const enum dyn_array_typ
 	}
 }
 
-static inline void override_item_size_dyn_array(dyn_array* dyn_struct, const unsigned int size)
+/*
+	To be used for custom data types; only once BEFORE adding any items
+*/
+static inline void override_item_size_dyn_array(dyn_array* const dyn_struct, const unsigned int size)
 {
 	dyn_struct->item_size = size;
 }
 
-static inline void* get_dyn_array(const dyn_array* dyn_struct, unsigned int index)
+static inline void* get_dyn_array(const dyn_array* const dyn_struct, const unsigned int index)
 {
 	if (dyn_struct == NULL) return NULL;
 	if (index >= dyn_struct->current_size) return NULL;
@@ -97,6 +114,10 @@ static inline void* get_dyn_array(const dyn_array* dyn_struct, unsigned int inde
 			return &dyn_get_vec3(dyn_struct->data, index);
 		case DYN_ARRAY_VECTOR_4_TYPE:
 			return &dyn_get_vec4(dyn_struct->data, index);
+		case DYN_ARRAY_MATRIX_2X2_TYPE:
+			return &dyn_get_2x2(dyn_struct->data, index);
+		case DYN_ARRAY_MATRIX_3X3_TYPE:
+			return &dyn_get_3x3(dyn_struct->data, index);
 		case DYN_ARRAY_MATRIX_4X4_TYPE:
 			return &dyn_get_4x4(dyn_struct->data, index);
 		default:
@@ -104,7 +125,7 @@ static inline void* get_dyn_array(const dyn_array* dyn_struct, unsigned int inde
 	}
 }
 
-static inline void* get_last_dyn_array(const dyn_array* dyn_struct)
+static inline void* get_last_dyn_array(const dyn_array* const dyn_struct)
 {
 	if (dyn_struct == NULL) return NULL;
 	if (dyn_struct->current_size == 0) return NULL;
@@ -121,6 +142,10 @@ static inline void* get_last_dyn_array(const dyn_array* dyn_struct)
 			return &dyn_get_last_vec3(dyn_struct);
 		case DYN_ARRAY_VECTOR_4_TYPE:
 			return &dyn_get_last_vec4(dyn_struct);
+		case DYN_ARRAY_MATRIX_2X2_TYPE:
+			return &dyn_get_last_2x2(dyn_struct);
+		case DYN_ARRAY_MATRIX_3X3_TYPE:
+			return &dyn_get_last_3x3(dyn_struct);
 		case DYN_ARRAY_MATRIX_4X4_TYPE:
 			return &dyn_get_last_4x4(dyn_struct);
 		default:
@@ -128,7 +153,7 @@ static inline void* get_last_dyn_array(const dyn_array* dyn_struct)
 	}
 }
 
-static inline void* add_slot_dyn_array(dyn_array* dyn_struct)
+static inline void* add_slot_dyn_array(dyn_array* const dyn_struct)
 {
 	if (dyn_struct->current_size == dyn_struct->max_size)
 	{
@@ -140,7 +165,7 @@ static inline void* add_slot_dyn_array(dyn_array* dyn_struct)
 	return get_last_dyn_array(dyn_struct);
 }
 
-static inline void clean_dyn_array(dyn_array* dyn_struct)
+static inline void clean_dyn_array(dyn_array* const dyn_struct)
 {
 	if (dyn_struct->data != NULL) free(dyn_struct->data);
 }

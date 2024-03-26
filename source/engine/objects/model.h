@@ -42,8 +42,8 @@ void initialiseModel(Model* const model);
 void loadObjectToModel(Model* const model, const char* path);
 void loadTextureToModel(Model* const model, const char* path);
 
-MODEL_INST_ID_TYPE addModelInstance(Model* const model, const vector3 coors, const vector3 scale, const vector3 rotation);
+MODEL_INST_ID_TYPE addModelInstance(Model* const model, const vector3 coords, const vector3 scale, const vector3 rotation);
 
-void clean_model(Model* model);
+void clean_model(Model* const model);
 
 #endif

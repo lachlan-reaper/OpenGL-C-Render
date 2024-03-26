@@ -1,11 +1,11 @@
 #include "matrix_4x4.h"
 
-matrix_4x4* new_mat4x4()
+matrix_4x4* new_mat4x4(void)
 {
 	return calloc(1, sizeof(matrix_4x4));
 }
 
-void set_translate_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
+void set_translate_mat4x4(matrix_4x4* const matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
 {
 	get_4x4(matrix->arr, 0, 0) = 1;
 	get_4x4(matrix->arr, 0, 1) = 0;
@@ -27,7 +27,7 @@ void set_translate_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VE
 	get_4x4(matrix->arr, 3, 2) = delta_z;
 	get_4x4(matrix->arr, 3, 3) = 1;
 }
-void set_scale_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
+void set_scale_mat4x4(matrix_4x4* const matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
 {
 	get_4x4(matrix->arr, 0, 0) = delta_x;
 	get_4x4(matrix->arr, 0, 1) = 0;
@@ -53,7 +53,7 @@ void set_scale_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTOR
 /*
 	WILL APPLY ROTATION IN ORDER M = B.X.Y.Z
 */
-void set_rotate_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
+void set_rotate_mat4x4(matrix_4x4* const matrix, const VECTOR_FLT delta_x, const VECTOR_FLT delta_y, const VECTOR_FLT delta_z)
 {
 	VECTOR_FLT A = cos(delta_x);
 	VECTOR_FLT B = sin(delta_x);
@@ -88,7 +88,7 @@ void set_rotate_mat4x4(matrix_4x4* matrix, const VECTOR_FLT delta_x, const VECTO
 	get_4x4(matrix->arr, 3, 3) = 1;
 }
 
-void set_perspective_mat4x4(matrix_4x4* matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT _near, const VECTOR_FLT _far)
+void set_perspective_mat4x4(matrix_4x4* const matrix, const VECTOR_FLT fov, const VECTOR_FLT aspect, const VECTOR_FLT _near, const VECTOR_FLT _far)
 {
 	VECTOR_FLT tan_fov = tan((VECTOR_FLT)fov/2.0f);
 	if (tan_fov == 0)
@@ -122,7 +122,7 @@ void set_perspective_mat4x4(matrix_4x4* matrix, const VECTOR_FLT fov, const VECT
 	get_4x4(matrix->arr, 3, 2) = (VECTOR_FLT)(2*_far*_near) / (VECTOR_FLT)(_near - _far);
 	get_4x4(matrix->arr, 3, 3) = 0;
 }
-void set_look_at_mat4x4(matrix_4x4* matrix, const vector3* location, const vector3* fixation, const vector3* rotation)
+void set_look_at_mat4x4(matrix_4x4* const matrix, const vector3* location, const vector3* fixation, const vector3* rotation)
 {
 	vector3 x_axis;
 	vector3 y_axis;

@@ -1,0 +1,16 @@
+#version 330 core
+#define MAX_INSTANCES 200
+
+layout(location = 0) in vec3 vertexPosition_modelspace;
+layout(location = 1) in vec2 vertexUV;
+
+out vec2 UV;
+
+uniform mat3 instance_matrices[MAX_INSTANCES]
+
+void main(){
+	vec3 vertexPos = instance_matrices[gl_InstanceID] * vertexPosition_modelspace;
+	gl_Position = vec4(vertexPos, 1);
+
+    UV = vertexUV;
+}

@@ -12,18 +12,22 @@ EXT_PATH := $(SRC_PATH)/ext
 COMP_FILES += $(ENG_PATH)/vectors/vector2.c
 COMP_FILES += $(ENG_PATH)/vectors/vector3.c 
 COMP_FILES += $(ENG_PATH)/vectors/vector4.c 
+COMP_FILES += $(ENG_PATH)/vectors/matrix_2x2.c 
+COMP_FILES += $(ENG_PATH)/vectors/matrix_3x3.c 
 COMP_FILES += $(ENG_PATH)/vectors/matrix_4x4.c 
 COMP_FILES += $(ENG_PATH)/util/dyn_array.c
+COMP_FILES += $(ENG_PATH)/render_engine.c 
+
+COMP_FILES += $(ENG_PATH)/objects/sprite.c 
+COMP_FILES += $(ENG_PATH)/objects/camera.c 
+COMP_FILES += $(ENG_PATH)/objects/model.c 
 COMP_FILES += $(ENG_PATH)/util/object_loader.c
 COMP_FILES += $(ENG_PATH)/util/shader_loader.c 
 COMP_FILES += $(ENG_PATH)/util/texture_loader.c
 COMP_FILES += $(ENG_PATH)/util/vbo_indexer.c
-COMP_FILES += $(ENG_PATH)/objects/camera.c 
-COMP_FILES += $(ENG_PATH)/objects/model.c 
-COMP_FILES += $(ENG_PATH)/render_engine.c 
+COMP_FILES += $(ENG_PATH)/default/basic_2d_functions.c
 COMP_FILES += $(ENG_PATH)/default/basic_3d_functions.c
 
-COMP_FILES += $(EXT_PATH)/default/movement.c
 COMP_FILES += $(EXT_PATH)/default/basic_movement.c
 
 COMP_FILES += $(MAIN_FILE)
