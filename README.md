@@ -6,7 +6,7 @@ While currently platform-dependent, the aim is to restructure later to become pl
 
 TODO: Convert set_basic to defines for the include using extern
 
-Orignially based on the [OpenGL tutorial for beginners](http://www.opengl-tutorial.org/beginners-tutorials) and [OpenGL tutorial for intermediates](http://www.opengl-tutorial.org/intermediate-tutorials/), later repurposed for private use.
+Inspired by the [OpenGL tutorial for beginners](http://www.opengl-tutorial.org/beginners-tutorials) and [OpenGL tutorial for intermediates](http://www.opengl-tutorial.org/intermediate-tutorials/), later repurposed for private use.
 
 [libs](./libs) folder to be replaced for platform-agnosticism. <br>
 [engine](./source/engine/) folder contains all of the code that is required for the render engine. <br>
